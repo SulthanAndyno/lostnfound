@@ -8,7 +8,8 @@ class HomeLoggedInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundGrey, // Warna dasar abu sangat terang
+      backgroundColor:
+          AppColors.backgroundGrey, // Warna dasar abu sangat terang
       body: Stack(
         children: [
           // Background Merah Melengkung di atas
@@ -21,7 +22,10 @@ class HomeLoggedInScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primaryRed,
                 borderRadius: BorderRadius.vertical(
-                  bottom: Radius.elliptical(MediaQuery.of(context).size.width, 100),
+                  bottom: Radius.elliptical(
+                    MediaQuery.of(context).size.width,
+                    100,
+                  ),
                 ),
               ),
             ),
@@ -34,7 +38,7 @@ class HomeLoggedInScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  
+
                   // Header Profil (Foto, Nama, NIM)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -44,7 +48,11 @@ class HomeLoggedInScreen extends StatelessWidget {
                           radius: 24,
                           backgroundColor: Colors.white,
                           child: ClipOval(
-                            child: Icon(Icons.person, size: 30, color: Colors.grey[400]),
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: Colors.grey[400],
+                            ),
                             // Jika ada gambar: Image.network('url_gambar', fit: BoxFit.cover)
                           ),
                         ),
@@ -129,11 +137,22 @@ class HomeLoggedInScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildScheduleInfo('Waktu', '07:30-10:30'),
-                              _buildScheduleInfo('Ruangan', 'RKB.KJ.04.003'),
-                              _buildScheduleInfo('Kode Dosen', 'ZII'),
+                              Expanded(
+                                child: _buildScheduleInfo(
+                                  'Waktu',
+                                  '07:30-10:30',
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildScheduleInfo(
+                                  'Ruangan',
+                                  'RKB.KJ.04.003',
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildScheduleInfo('Kode Dosen', 'ZII'),
+                              ),
                             ],
                           ),
                         ],
@@ -172,16 +191,50 @@ class HomeLoggedInScreen extends StatelessWidget {
                           physics: const NeverScrollableScrollPhysics(),
                           mainAxisSpacing: 20,
                           crossAxisSpacing: 8,
-                          childAspectRatio: 0.7, // Disesuaikan agar teks tidak terpotong
+                          childAspectRatio:
+                              0.7, // Disesuaikan agar teks tidak terpotong
                           children: [
-                            _buildFeatureIcon('Pengembang an Karakter ...', Icons.local_fire_department, Colors.grey[800]!),
-                            _buildFeatureIcon('Survey', Icons.fact_check_outlined, AppColors.primaryRed),
-                            _buildFeatureIcon('Language Center', Icons.school_outlined, Colors.grey),
-                            _buildFeatureIcon('Pelaporan Kode Etik', Icons.gavel, Colors.grey[800]!),
-                            _buildFeatureIcon('Suara TelUtizen', Icons.headset_mic_outlined, AppColors.primaryRed),
-                            _buildFeatureIcon('Presensi Mahasiswa', Icons.fingerprint, AppColors.primaryRed),
-                            _buildFeatureIcon('Nilai Mahasiswa', Icons.assignment_outlined, AppColors.primaryRed),
-                            _buildFeatureIcon('Lainnya', Icons.grid_view, AppColors.primaryRed, onTap: () => _showAppsBottomSheet(context)),
+                            _buildFeatureIcon(
+                              'Pengembang an Karakter ...',
+                              Icons.local_fire_department,
+                              Colors.grey[800]!,
+                            ),
+                            _buildFeatureIcon(
+                              'Survey',
+                              Icons.fact_check_outlined,
+                              AppColors.primaryRed,
+                            ),
+                            _buildFeatureIcon(
+                              'Language Center',
+                              Icons.school_outlined,
+                              Colors.grey,
+                            ),
+                            _buildFeatureIcon(
+                              'Pelaporan Kode Etik',
+                              Icons.gavel,
+                              Colors.grey[800]!,
+                            ),
+                            _buildFeatureIcon(
+                              'Suara TelUtizen',
+                              Icons.headset_mic_outlined,
+                              AppColors.primaryRed,
+                            ),
+                            _buildFeatureIcon(
+                              'Presensi Mahasiswa',
+                              Icons.fingerprint,
+                              AppColors.primaryRed,
+                            ),
+                            _buildFeatureIcon(
+                              'Nilai Mahasiswa',
+                              Icons.assignment_outlined,
+                              AppColors.primaryRed,
+                            ),
+                            _buildFeatureIcon(
+                              'Lainnya',
+                              Icons.grid_view,
+                              AppColors.primaryRed,
+                              onTap: () => _showAppsBottomSheet(context),
+                            ),
                           ],
                         ),
                       ],
@@ -189,10 +242,7 @@ class HomeLoggedInScreen extends StatelessWidget {
                   ),
 
                   // Spacer Abu-abu
-                  Container(
-                    height: 8,
-                    color: AppColors.backgroundGrey,
-                  ),
+                  Container(height: 8, color: AppColors.backgroundGrey),
 
                   // Tel-U Event
                   Container(
@@ -235,7 +285,9 @@ class HomeLoggedInScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 100), // Ruang ekstra untuk bottom bar
+                        const SizedBox(
+                          height: 100,
+                        ), // Ruang ekstra untuk bottom bar
                       ],
                     ),
                   ),
@@ -250,21 +302,20 @@ class HomeLoggedInScreen extends StatelessWidget {
 
   Widget _buildScheduleInfo(String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 11,
-          ),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.grey, fontSize: 10),
         ),
         const SizedBox(height: 4),
         Text(
           value,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: AppColors.textDark,
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -290,7 +341,10 @@ class HomeLoggedInScreen extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 16.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -312,28 +366,99 @@ class HomeLoggedInScreen extends StatelessWidget {
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 4,
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 8.0,
+                  ),
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 8,
                   childAspectRatio: 0.7,
                   children: [
-                    _buildFeatureIcon('Pengembangan Karakt...', Icons.local_fire_department, Colors.grey[800]!),
-                    _buildFeatureIcon('Survey', Icons.fact_check_outlined, AppColors.primaryRed),
-                    _buildFeatureIcon('Language Center', Icons.school_outlined, Colors.grey),
-                    _buildFeatureIcon('Pelaporan Kode Etik', Icons.gavel, Colors.grey[800]!),
-                    _buildFeatureIcon('Suara TelUtizen', Icons.headset_mic_outlined, AppColors.primaryRed),
-                    _buildFeatureIcon('Presensi Mahasiswa', Icons.fingerprint, AppColors.primaryRed),
-                    _buildFeatureIcon('Nilai Mahasiswa', Icons.assignment_outlined, AppColors.primaryRed),
-                    _buildFeatureIcon('Service Desk', Icons.support_agent, Colors.grey[800]!),
-                    _buildFeatureIcon('LMS Android', Icons.android, AppColors.primaryRed),
-                    _buildFeatureIcon('LMS IOS', Icons.apple, AppColors.primaryRed),
-                    _buildFeatureIcon('SMB Telkom University', Icons.school_outlined, Colors.red[300]!),
-                    _buildFeatureIcon('Merpati', Icons.flight, AppColors.primaryRed),
-                    _buildFeatureIcon('SIMKA', Icons.assignment_ind, Colors.grey[800]!),
-                    _buildFeatureIcon('Sirama Registrasi', Icons.library_books, AppColors.primaryRed),
-                    _buildFeatureIcon('Open Library', Icons.menu_book, Colors.orange),
-                    _buildFeatureIcon('Hotline Konseling ...', Icons.local_fire_department, Colors.grey[800]!),
-                    _buildFeatureIcon('MyTucTuc', Icons.directions_car_outlined, Colors.red[200]!),
+                    _buildFeatureIcon(
+                      'Pengembangan Karakt...',
+                      Icons.local_fire_department,
+                      Colors.grey[800]!,
+                    ),
+                    _buildFeatureIcon(
+                      'Survey',
+                      Icons.fact_check_outlined,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'Language Center',
+                      Icons.school_outlined,
+                      Colors.grey,
+                    ),
+                    _buildFeatureIcon(
+                      'Pelaporan Kode Etik',
+                      Icons.gavel,
+                      Colors.grey[800]!,
+                    ),
+                    _buildFeatureIcon(
+                      'Suara TelUtizen',
+                      Icons.headset_mic_outlined,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'Presensi Mahasiswa',
+                      Icons.fingerprint,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'Nilai Mahasiswa',
+                      Icons.assignment_outlined,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'Service Desk',
+                      Icons.support_agent,
+                      Colors.grey[800]!,
+                    ),
+                    _buildFeatureIcon(
+                      'LMS Android',
+                      Icons.android,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'LMS IOS',
+                      Icons.apple,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'SMB Telkom University',
+                      Icons.school_outlined,
+                      Colors.red[300]!,
+                    ),
+                    _buildFeatureIcon(
+                      'Merpati',
+                      Icons.flight,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'SIMKA',
+                      Icons.assignment_ind,
+                      Colors.grey[800]!,
+                    ),
+                    _buildFeatureIcon(
+                      'Sirama Registrasi',
+                      Icons.library_books,
+                      AppColors.primaryRed,
+                    ),
+                    _buildFeatureIcon(
+                      'Open Library',
+                      Icons.menu_book,
+                      Colors.orange,
+                    ),
+                    _buildFeatureIcon(
+                      'Hotline Konseling ...',
+                      Icons.local_fire_department,
+                      Colors.grey[800]!,
+                    ),
+                    _buildFeatureIcon(
+                      'MyTucTuc',
+                      Icons.directions_car_outlined,
+                      Colors.red[200]!,
+                    ),
                     _buildFeatureIcon(
                       'Lost & Found',
                       Icons.work_outline,
@@ -358,41 +483,40 @@ class HomeLoggedInScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureIcon(String title, IconData icon, Color iconColor, {VoidCallback? onTap}) {
+  Widget _buildFeatureIcon(
+    String title,
+    IconData icon,
+    Color iconColor, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-        Container(
-          width: 55,
-          height: 55,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!, width: 1.5),
+          Container(
+            width: 55,
+            height: 55,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!, width: 1.5),
+            ),
+            child: Center(child: Icon(icon, color: iconColor, size: 26)),
           ),
-          child: Center(
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 26,
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.black54,
+              height: 1.2,
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.black54,
-            height: 1.2,
-          ),
-        ),
-      ],
+        ],
       ),
     );
   }
