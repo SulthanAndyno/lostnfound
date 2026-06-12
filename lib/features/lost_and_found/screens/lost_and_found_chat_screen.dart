@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import 'dart:io';
 import '../widgets/lost_and_found_bottom_bar.dart';
+import '../services/lost_and_found_service.dart';
 
 class LostAndFoundChatScreen extends StatefulWidget {
   final String itemName;
@@ -28,48 +29,41 @@ class LostAndFoundChatScreen extends StatefulWidget {
 class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<Map<String, dynamic>> _chatMessages = [];
 
   @override
   void initState() {
     super.initState();
-    // Pre-populate chat list with sample messages
-    _chatMessages.addAll([
-      {
-        'isMe': false,
-        'message': 'Halo, saya rasa saya menemukan barang Anda di area kampus tadi. Isinya masih lengkap.',
-        'time': '09:42 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': true,
-        'message': 'Wah terima kasih banyak! Benar, itu barang saya. Apakah kita bisa bertemu sore ini?',
-        'time': '09:45 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': false,
-        'message': 'Ini fotonya untuk memastikan. Saya bisa bertemu di Lobby Gedung A jam 4 sore, bagaimana?',
-        'time': '09:48 AM',
-        'hasImage': true,
-        'imageUrl': widget.imageUrl,
-      },
-    ]);
+    LostAndFoundService().addListener(_onServiceChanged);
+  }
+
+  @override
+  void dispose() {
+    LostAndFoundService().removeListener(_onServiceChanged);
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onServiceChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  List<Map<String, dynamic>> get _chatMessages {
+    return LostAndFoundService().getChatMessages(widget.itemId ?? 'default');
   }
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    final now = TimeOfDay.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    setState(() {
-      _chatMessages.add({
-        'isMe': true,
-        'message': _messageController.text.trim(),
-        'time': timeStr,
-        'hasImage': false,
-      });
-      _messageController.clear();
-    });
+    final text = _messageController.text.trim();
+    _messageController.clear();
+
+    LostAndFoundService().sendChatMessage(
+      widget.itemId ?? 'default',
+      message: text,
+      isMe: true,
+    );
 
     // Scroll to bottom after sending
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -122,6 +116,9 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
+                      if (widget.itemId != null) {
+                        LostAndFoundService().updateItemStatus(widget.itemId!, 'SELESAI');
+                      }
                       widget.onStatusChanged?.call('SELESAI');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -437,6 +434,9 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
                 subtitle: const Text('Kembalikan status ke Diproses', style: TextStyle(fontSize: 11)),
                 onTap: () {
                   Navigator.pop(context);
+                  if (widget.itemId != null) {
+                    LostAndFoundService().updateItemStatus(widget.itemId!, 'DIPROSES');
+                  }
                   widget.onStatusChanged?.call('DIPROSES');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
