@@ -4,6 +4,7 @@ import 'lost_and_found_chat_screen.dart';
 import 'dart:io';
 import '../models/lost_and_found_item.dart';
 import '../widgets/lost_and_found_bottom_bar.dart';
+import '../services/lost_and_found_service.dart';
 
 class LostAndFoundDetailScreen extends StatelessWidget {
   final LostAndFoundItem item;
@@ -301,111 +302,235 @@ class LostAndFoundDetailScreen extends StatelessWidget {
 
                             // Status-aware Action Buttons
                             if (item.isActive) ...[
-                              // Primary: Hubungi / Lanjut Chat
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    // Set status ke DALAM KLAIM jika masih DIPROSES
-                                    if (item.reportStatus == 'DIPROSES') {
-                                      onStatusChanged?.call('DALAM KLAIM');
-                                    }
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => LostAndFoundChatScreen(
-                                          itemName: item.itemName,
-                                          imageUrl: item.imageUrl,
-                                          reporterName: item.reporterName,
-                                          reporterAvatar: item.reporterAvatar,
-                                          itemId: item.id,
-                                          onStatusChanged: onStatusChanged,
+                              if (item.reporterName == 'Saya') ...[
+                                // Jika laporan milik SAYA
+                                if (item.reportStatus == 'DIPROSES') ...[
+                                  // Primary: Tandai Selesai
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        _showCompleteDialog(context);
+                                      },
+                                      icon: const Icon(Icons.check_circle_outline, size: 18),
+                                      label: const Text(
+                                        'Tandai Sudah Ditemukan',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
                                         ),
                                       ),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    item.reportStatus == 'DALAM KLAIM'
-                                        ? Icons.chat
-                                        : Icons.chat_bubble_outline,
-                                    size: 18,
-                                  ),
-                                  label: Text(
-                                    item.reportStatus == 'DALAM KLAIM'
-                                        ? 'Lanjutkan Chat'
-                                        : (item.isLostReport
-                                            ? 'Hubungi Pemilik'
-                                            : 'Hubungi Penemu'),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF10B981),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        elevation: 2,
+                                      ),
                                     ),
                                   ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: item.reportStatus == 'DALAM KLAIM'
-                                        ? const Color(0xFF3B82F6)
-                                        : AppColors.primaryRed,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 12),
+                                  // Secondary: Batalkan Laporan
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        _showCancelDialog(context);
+                                      },
+                                      icon: const Icon(Icons.cancel_outlined, size: 18),
+                                      label: const Text(
+                                        'Batalkan Laporan',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.grey[700],
+                                        side: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
-                                    elevation: 2,
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // Secondary: Tandai Selesai (only in DALAM KLAIM)
-                              if (item.reportStatus == 'DALAM KLAIM')
+                                ] else if (item.reportStatus == 'DALAM KLAIM') ...[
+                                  // Primary: Lanjut Chat
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => LostAndFoundChatScreen(
+                                              itemName: item.itemName,
+                                              imageUrl: item.imageUrl,
+                                              reporterName: 'Pihak Lain',
+                                              reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
+                                              itemId: item.id,
+                                              onStatusChanged: onStatusChanged,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.chat, size: 18),
+                                      label: const Text(
+                                        'Lanjutkan Chat Klaim',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF3B82F6),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        elevation: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Secondary: Tandai Selesai
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        _showCompleteDialog(context);
+                                      },
+                                      icon: const Icon(Icons.check_circle_outline, size: 18),
+                                      label: const Text(
+                                        'Tandai Barang Sudah Dikembalikan',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFF10B981),
+                                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ] else ...[
+                                // Jika laporan milik ORANG LAIN
+                                // Primary: Hubungi / Lanjut Chat
                                 SizedBox(
                                   width: double.infinity,
-                                  child: OutlinedButton.icon(
+                                  child: ElevatedButton.icon(
                                     onPressed: () {
-                                      _showCompleteDialog(context);
+                                      if (item.reportStatus == 'DIPROSES') {
+                                        LostAndFoundService().updateItemStatus(item.id, 'DALAM KLAIM');
+                                        onStatusChanged?.call('DALAM KLAIM');
+                                      }
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LostAndFoundChatScreen(
+                                            itemName: item.itemName,
+                                            imageUrl: item.imageUrl,
+                                            reporterName: item.reporterName,
+                                            reporterAvatar: item.reporterAvatar,
+                                            itemId: item.id,
+                                            onStatusChanged: onStatusChanged,
+                                          ),
+                                        ),
+                                      );
                                     },
-                                    icon: const Icon(Icons.check_circle_outline, size: 18),
-                                    label: const Text(
-                                      'Tandai Barang Sudah Diterima',
-                                      style: TextStyle(
+                                    icon: Icon(
+                                      item.reportStatus == 'DALAM KLAIM'
+                                          ? Icons.chat
+                                          : Icons.chat_bubble_outline,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      item.reportStatus == 'DALAM KLAIM'
+                                          ? 'Lanjutkan Chat'
+                                          : (item.isLostReport
+                                              ? 'Hubungi Pemilik'
+                                              : 'Hubungi Penemu'),
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
                                     ),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF10B981),
-                                      side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: item.reportStatus == 'DALAM KLAIM'
+                                          ? const Color(0xFF3B82F6)
+                                          : AppColors.primaryRed,
+                                      foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 16),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
+                                      elevation: 2,
                                     ),
                                   ),
                                 ),
+                                const SizedBox(height: 12),
 
-                              if (item.reportStatus == 'DIPROSES') ...[
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.share_outlined, size: 18),
-                                    label: const Text(
-                                      'Bagikan Temuan',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                // Secondary: Tandai Selesai (only in DALAM KLAIM)
+                                if (item.reportStatus == 'DALAM KLAIM')
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        _showCompleteDialog(context);
+                                      },
+                                      icon: const Icon(Icons.check_circle_outline, size: 18),
+                                      label: const Text(
+                                        'Tandai Barang Sudah Diterima',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: AppColors.primaryRed,
-                                      side: const BorderSide(color: AppColors.primaryRed, width: 1.5),
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFF10B981),
+                                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+
+                                if (item.reportStatus == 'DIPROSES') ...[
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.share_outlined, size: 18),
+                                      label: const Text(
+                                        'Bagikan Temuan',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.primaryRed,
+                                        side: const BorderSide(color: AppColors.primaryRed, width: 1.5),
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ],
 
@@ -556,6 +681,7 @@ class LostAndFoundDetailScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
+                      LostAndFoundService().updateItemStatus(item.id, 'SELESAI');
                       onStatusChanged?.call('SELESAI');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -573,6 +699,73 @@ class LostAndFoundDetailScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Text('Ya, Selesai', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCancelDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cancel_outlined, color: Colors.grey, size: 64),
+            const SizedBox(height: 16),
+            const Text(
+              'Batalkan Laporan?',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Apakah Anda yakin ingin membatalkan laporan ini? Tindakan ini tidak dapat diurungkan.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.black54, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey,
+                      side: const BorderSide(color: Colors.grey),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Tidak', style: TextStyle(fontSize: 12)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      LostAndFoundService().updateItemStatus(item.id, 'BATAL');
+                      onStatusChanged?.call('BATAL');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Laporan berhasil dibatalkan.'),
+                          backgroundColor: Colors.grey[700],
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      );
+                      Navigator.pop(context); // Back to list
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[700],
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Ya, Batalkan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
