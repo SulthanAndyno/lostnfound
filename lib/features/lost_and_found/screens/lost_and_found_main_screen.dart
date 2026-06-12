@@ -4,10 +4,12 @@ import 'create_report_screen.dart';
 import 'my_reports_screen.dart';
 import '../models/lost_and_found_item.dart';
 import '../widgets/lost_and_found_item_card.dart';
+import '../services/lost_and_found_service.dart';
 
 class LostAndFoundMainScreen extends StatefulWidget {
   final String campusName;
-  const LostAndFoundMainScreen({Key? key, required this.campusName}) : super(key: key);
+  const LostAndFoundMainScreen({Key? key, required this.campusName})
+    : super(key: key);
 
   @override
   State<LostAndFoundMainScreen> createState() => _LostAndFoundMainScreenState();
@@ -18,102 +20,26 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
   String activeFilter = 'Semua';
   String searchQuery = '';
 
-  final List<LostAndFoundItem> _items = [
-    LostAndFoundItem(
-      status: 'LOST REPORT',
-      itemName: 'DOMPET KULIT HITAM',
-      location: 'Gedung Perpustakaan Pusat, Lt. 2.',
-      imageUrl: 'https://images.unsplash.com/photo-1627124118123-2854b3dbc19a?q=80&w=300',
-      category: 'Aksesoris & Personal',
-      date: '12 Okt 2023',
-      description: 'Dompet kulit berwarna hitam merek \'Fossil\'. Berisi kartu identitas (KTM), beberapa kartu ATM, dan uang tunai. Terakhir terlihat di meja area pelajar lantai 2 Perpustakaan Pusat.',
-      reporterName: 'Budi',
-      reporterAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150',
-      reporterRating: 4.9,
-      isLostReport: true,
-      statusColor: AppColors.primaryRed,
-      reportStatus: 'DIPROSES',
-    ),
-    LostAndFoundItem(
-      status: 'LOST REPORT',
-      itemName: 'HEADPHONE SONY',
-      location: 'Perpustakaan Kampus B',
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
-      category: 'Elektronik',
-      date: '15 Okt 2023',
-      description: 'Headphone Sony WH-1000XM4 warna hitam. Terakhir diletakkan di meja perpustakaan Kampus B.',
-      reporterName: 'Siti',
-      reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
-      reporterRating: 4.8,
-      isLostReport: true,
-      statusColor: AppColors.primaryRed,
-      reportStatus: 'DALAM KLAIM',
-    ),
-    LostAndFoundItem(
-      status: 'LOST REPORT',
-      itemName: 'KUNCI KAMAR KOS',
-      location: 'Area Parkiran Kampus A',
-      imageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=300',
-      category: 'Lain-lain',
-      date: '16 Okt 2023',
-      description: 'Gantungan kunci kamar kos dengan mainan boneka beruang warna coklat.',
-      reporterName: 'Rian',
-      reporterAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150',
-      reporterRating: 4.7,
-      isLostReport: true,
-      isCancelled: true,
-      backgroundColor: const Color(0xFFEBE3E1),
-      statusColor: AppColors.primaryRed,
-      reportStatus: 'BATAL',
-    ),
-    LostAndFoundItem(
-      status: 'FOUND REPORT',
-      itemName: 'DOMPET KULIT HITAM',
-      location: 'Gedung Perpustakaan Pusat, Lt. 2.',
-      imageUrl: 'https://images.unsplash.com/photo-1627124118123-2854b3dbc19a?q=80&w=300',
-      category: 'Aksesoris & Personal',
-      date: '12 Okt 2023',
-      description: 'Dompet kulit berwarna hitam merek \'Fossil\'. Ditemukan di meja area pelajar lantai 2 Perpustakaan Pusat.',
-      reporterName: 'Budi',
-      reporterAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150',
-      reporterRating: 4.9,
-      isLostReport: false,
-      statusColor: const Color(0xFF00897B),
-      reportStatus: 'DIPROSES',
-    ),
-    LostAndFoundItem(
-      status: 'FOUND REPORT',
-      itemName: 'HEADPHONE SONY',
-      location: 'Telah diserahkan kepada pemilik\n12 September 2025.',
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
-      category: 'Elektronik',
-      date: '15 Okt 2023',
-      description: 'Headphone Sony WH-1000XM4 warna hitam. Telah diserahkan kepada pemilik pada 12 September 2025.',
-      reporterName: 'Siti',
-      reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
-      reporterRating: 4.8,
-      isLostReport: false,
-      isFoundCompleted: true,
-      statusColor: const Color(0xFF00897B),
-      reportStatus: 'SELESAI',
-    ),
-    LostAndFoundItem(
-      status: 'FOUND REPORT',
-      itemName: 'KUNCI KAMAR KOS',
-      location: 'Telah diserahkan kepada pemilik\n12 September 2025.',
-      imageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=300',
-      category: 'Lain-lain',
-      date: '16 Okt 2023',
-      description: 'Kunci kamar kos dengan gantungan besi. Telah diserahkan kepada pemilik pada 12 September 2025.',
-      reporterName: 'Rian',
-      reporterAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150',
-      reporterRating: 4.7,
-      isLostReport: false,
-      isFoundCompleted: true,
-      statusColor: const Color(0xFF00897B),
-      reportStatus: 'SELESAI',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    LostAndFoundService().addListener(_onServiceChanged);
+  }
+
+  @override
+  void dispose() {
+    LostAndFoundService().removeListener(_onServiceChanged);
+    super.dispose();
+  }
+
+  void _onServiceChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  List<LostAndFoundItem> get _items =>
+      LostAndFoundService().getItems(campus: widget.campusName);
 
   List<LostAndFoundItem> get _filteredItems {
     return _items.where((item) {
@@ -121,9 +47,12 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
       if (item.isLostReport != isBarangHilang) return false;
 
       // 2. Filter status
-      if (activeFilter == 'Diproses' && item.reportStatus != 'DIPROSES') return false;
-      if (activeFilter == 'Dalam Klaim' && item.reportStatus != 'DALAM KLAIM') return false;
-      if (activeFilter == 'Selesai' && item.reportStatus != 'SELESAI') return false;
+      if (activeFilter == 'Diproses' && item.reportStatus != 'DIPROSES')
+        return false;
+      if (activeFilter == 'Dalam Klaim' && item.reportStatus != 'DALAM KLAIM')
+        return false;
+      if (activeFilter == 'Selesai' && item.reportStatus != 'SELESAI')
+        return false;
 
       // 3. Query pencarian
       if (searchQuery.isNotEmpty) {
@@ -141,17 +70,19 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
   }
 
   // Statistik
-  int get _totalLaporan => _items.where((i) => i.isLostReport == isBarangHilang).length;
-  int get _activeCount => _items.where((i) => i.isLostReport == isBarangHilang && i.isActive).length;
-  int get _selesaiCount => _items.where((i) => i.isLostReport == isBarangHilang && i.reportStatus == 'SELESAI').length;
+  int get _totalLaporan =>
+      _items.where((i) => i.isLostReport == isBarangHilang).length;
+  int get _activeCount => _items
+      .where((i) => i.isLostReport == isBarangHilang && i.isActive)
+      .length;
+  int get _selesaiCount => _items
+      .where(
+        (i) => i.isLostReport == isBarangHilang && i.reportStatus == 'SELESAI',
+      )
+      .length;
 
   void _updateItemStatus(String itemId, String newStatus) {
-    setState(() {
-      final idx = _items.indexWhere((i) => i.id == itemId);
-      if (idx != -1) {
-        _items[idx].reportStatus = newStatus;
-      }
-    });
+    LostAndFoundService().updateItemStatus(itemId, newStatus);
   }
 
   @override
@@ -176,10 +107,7 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MyReportsScreen(
-                    allItems: _items,
-                    onStatusChanged: _updateItemStatus,
-                  ),
+                  builder: (context) => const MyReportsScreen(),
                 ),
               );
             },
@@ -195,16 +123,19 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
             right: 0,
             child: Container(
               height: 150,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-              ),
+              decoration: const BoxDecoration(color: AppColors.primaryRed),
             ),
           ),
 
           // Konten Utama
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 10.0, bottom: 20.0),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 10.0,
+                bottom: 20.0,
+              ),
               child: Stack(
                 children: [
                   Container(
@@ -213,72 +144,89 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                       color: const Color(0xFFEBE3E1), // Krem background
                       borderRadius: BorderRadius.circular(32),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 24.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Title Lost & Found
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            const Text(
+                              'Lost & Found',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF4A4444),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Lost & Found',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFF4A4444),
+                                Expanded(
+                                  child: Text(
+                                    'Kampus ${widget.campusName}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Kampus ${widget.campusName}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.w500,
+                                // Badge Laporan Saya
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MyReportsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryRed.withOpacity(
+                                        0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: AppColors.primaryRed.withOpacity(
+                                          0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(
+                                          Icons.history,
+                                          color: AppColors.primaryRed,
+                                          size: 14,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Laporan Saya',
+                                          style: TextStyle(
+                                            color: AppColors.primaryRed,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
-                            ),
-                            // Badge Laporan Saya
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MyReportsScreen(
-                                      allItems: _items,
-                                      onStatusChanged: _updateItemStatus,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryRed.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppColors.primaryRed.withOpacity(0.3)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    Icon(Icons.history, color: AppColors.primaryRed, size: 14),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Laporan Saya',
-                                      style: TextStyle(
-                                        color: AppColors.primaryRed,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ],
                         ),
@@ -287,11 +235,23 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                         // Statistik Ringkas
                         Row(
                           children: [
-                            _buildStatCard('Total', _totalLaporan.toString(), const Color(0xFF6B7280)),
+                            _buildStatCard(
+                              'Total',
+                              _totalLaporan.toString(),
+                              const Color(0xFF6B7280),
+                            ),
                             const SizedBox(width: 8),
-                            _buildStatCard('Aktif', _activeCount.toString(), const Color(0xFFF59E0B)),
+                            _buildStatCard(
+                              'Aktif',
+                              _activeCount.toString(),
+                              const Color(0xFFF59E0B),
+                            ),
                             const SizedBox(width: 8),
-                            _buildStatCard('Selesai', _selesaiCount.toString(), const Color(0xFF10B981)),
+                            _buildStatCard(
+                              'Selesai',
+                              _selesaiCount.toString(),
+                              const Color(0xFF10B981),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -302,10 +262,17 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                             color: AppColors.primaryRed.withOpacity(0.85),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
                           child: Row(
                             children: [
-                              const Icon(Icons.search, color: Colors.white, size: 28),
+                              const Icon(
+                                Icons.search,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: TextField(
@@ -316,8 +283,12 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                     });
                                   },
                                   decoration: InputDecoration(
-                                    hintText: 'Cari barang, kategori, lokasi...',
-                                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13),
+                                    hintText:
+                                        'Cari barang, kategori, lokasi...',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 13,
+                                    ),
                                     border: InputBorder.none,
                                   ),
                                 ),
@@ -345,14 +316,18 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                   child: Container(
                                     margin: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: isBarangHilang ? Colors.white : Colors.transparent,
+                                      color: isBarangHilang
+                                          ? Colors.white
+                                          : Colors.transparent,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
                                       'Barang Hilang',
                                       style: TextStyle(
-                                        color: isBarangHilang ? AppColors.primaryRed : Colors.white,
+                                        color: isBarangHilang
+                                            ? AppColors.primaryRed
+                                            : Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
@@ -369,14 +344,18 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                   child: Container(
                                     margin: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: !isBarangHilang ? Colors.white : Colors.transparent,
+                                      color: !isBarangHilang
+                                          ? Colors.white
+                                          : Colors.transparent,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
                                       'Barang Temuan',
                                       style: TextStyle(
-                                        color: !isBarangHilang ? AppColors.primaryRed : Colors.white,
+                                        color: !isBarangHilang
+                                            ? AppColors.primaryRed
+                                            : Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
@@ -414,7 +393,11 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.search_off, size: 60, color: Colors.grey[400]),
+                                      Icon(
+                                        Icons.search_off,
+                                        size: 60,
+                                        color: Colors.grey[400],
+                                      ),
                                       const SizedBox(height: 12),
                                       Text(
                                         'Tidak ada data barang.',
@@ -441,7 +424,9 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                   itemBuilder: (context, index) {
                                     final item = filteredItems[index];
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 12.0),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12.0,
+                                      ),
                                       child: LostAndFoundItemCard(
                                         item: item,
                                         onStatusUpdated: (newStatus) {
@@ -475,18 +460,27 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                         ],
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.note_add_outlined, color: AppColors.primaryRed, size: 28),
+                        icon: const Icon(
+                          Icons.note_add_outlined,
+                          color: AppColors.primaryRed,
+                          size: 28,
+                        ),
                         onPressed: () async {
-                          final newReportMap = await Navigator.push<Map<String, dynamic>>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CreateReportScreen(),
-                            ),
-                          );
+                          final newReportMap =
+                              await Navigator.push<Map<String, dynamic>>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateReportScreen(),
+                                ),
+                              );
                           if (newReportMap != null) {
-                            setState(() {
-                              _items.insert(0, LostAndFoundItem.fromMap(newReportMap));
-                            });
+                            final map = Map<String, dynamic>.from(newReportMap);
+                            map['id'] = DateTime.now().millisecondsSinceEpoch
+                                .toString();
+                            map['campusName'] = widget.campusName;
+                            final newItem = LostAndFoundItem.fromMap(map);
+                            LostAndFoundService().createReport(newItem);
                           }
                         },
                       ),
@@ -553,10 +547,14 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryRed.withOpacity(0.85) : Colors.white,
+          color: isActive
+              ? AppColors.primaryRed.withOpacity(0.85)
+              : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isActive ? AppColors.primaryRed : Colors.grey.withOpacity(0.3),
+            color: isActive
+                ? AppColors.primaryRed
+                : Colors.grey.withOpacity(0.3),
             width: 1,
           ),
         ),
