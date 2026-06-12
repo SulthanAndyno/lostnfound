@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/lost_and_found_item.dart';
 import '../widgets/lost_and_found_item_card.dart';
+import '../services/lost_and_found_service.dart';
 
 class MyReportsScreen extends StatefulWidget {
-  final List<LostAndFoundItem> allItems;
-  final Function(String itemId, String newStatus)? onStatusChanged;
-
-  const MyReportsScreen({
-    Key? key,
-    required this.allItems,
-    this.onStatusChanged,
-  }) : super(key: key);
+  const MyReportsScreen({Key? key}) : super(key: key);
 
   @override
   State<MyReportsScreen> createState() => _MyReportsScreenState();
@@ -24,16 +18,24 @@ class _MyReportsScreenState extends State<MyReportsScreen> with SingleTickerProv
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    LostAndFoundService().addListener(_onServiceChanged);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    LostAndFoundService().removeListener(_onServiceChanged);
     super.dispose();
   }
 
+  void _onServiceChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   List<LostAndFoundItem> get _myItems {
-    return widget.allItems.where((i) => i.reporterName == 'Saya').toList();
+    return LostAndFoundService().getMyReports();
   }
 
   List<LostAndFoundItem> _filterByTab(int tabIndex) {
@@ -167,10 +169,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> with SingleTickerProv
           child: LostAndFoundItemCard(
             item: items[index],
             onStatusUpdated: (newStatus) {
-              if (widget.onStatusChanged != null) {
-                widget.onStatusChanged!(items[index].id, newStatus);
-                setState(() {}); // Refresh UI
-              }
+              LostAndFoundService().updateItemStatus(items[index].id, newStatus);
             },
           ),
         );

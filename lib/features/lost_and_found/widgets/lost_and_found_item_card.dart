@@ -195,13 +195,14 @@ class LostAndFoundItemCard extends StatelessWidget {
                     children: [
                       // Primary Action Button
                       GestureDetector(
-                        onTap: () {
-                          if (item.isLostReport && item.reportStatus == 'DIPROSES') {
+                       onTap: () {
+                          final bool isMyReport = item.reporterName == 'Saya';
+                          if (isMyReport && item.reportStatus == 'DIPROSES') {
                             // Tandai sudah ditemukan → Selesai
                             _showConfirmDialog(
                               context,
                               'Konfirmasi Selesai',
-                              'Apakah barang ini sudah ditemukan? Status laporan akan berubah menjadi Selesai.',
+                              'Apakah barang ini sudah ditemukan/dikembalikan? Status laporan akan berubah menjadi Selesai.',
                               () {
                                 onStatusUpdated?.call('SELESAI');
                               },
@@ -214,15 +215,17 @@ class LostAndFoundItemCard extends StatelessWidget {
                                 builder: (context) => LostAndFoundChatScreen(
                                   itemName: item.itemName,
                                   imageUrl: item.imageUrl,
-                                  reporterName: item.reporterName,
-                                  reporterAvatar: item.reporterAvatar,
+                                  reporterName: isMyReport ? 'Pihak Lain' : item.reporterName,
+                                  reporterAvatar: isMyReport 
+                                      ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150' 
+                                      : item.reporterAvatar,
                                   itemId: item.id,
                                   onStatusChanged: onStatusUpdated,
                                 ),
                               ),
                             );
                           } else {
-                            // Hubungi Penemu → set status DALAM KLAIM
+                            // Hubungi Penemu/Pemilik → set status DALAM KLAIM
                             onStatusUpdated?.call('DALAM KLAIM');
                             Navigator.push(
                               context,
@@ -296,23 +299,39 @@ class LostAndFoundItemCard extends StatelessWidget {
   }
 
   Color get _primaryButtonColor {
-    if (item.isLostReport && item.reportStatus == 'DIPROSES') {
-      return const Color(0xFF10B981); // Green for "Sudah Ditemukan"
+    final bool isMyReport = item.reporterName == 'Saya';
+    if (isMyReport) {
+      if (item.reportStatus == 'DIPROSES') {
+        return const Color(0xFF10B981); // Green for "Sudah Ditemukan"
+      }
+      if (item.reportStatus == 'DALAM KLAIM') {
+        return const Color(0xFF3B82F6); // Blue for "Lanjut Chat"
+      }
+      return const Color(0xFF10B981);
+    } else {
+      if (item.reportStatus == 'DALAM KLAIM') {
+        return const Color(0xFF3B82F6); // Blue for "Lanjut Chat"
+      }
+      return AppColors.primaryRed; // Red for "Hubungi Pemilik/Penemu"
     }
-    if (item.reportStatus == 'DALAM KLAIM') {
-      return const Color(0xFF3B82F6); // Blue for "Lanjut Chat"
-    }
-    return AppColors.primaryRed;
   }
 
   String get _primaryButtonLabel {
-    if (item.isLostReport && item.reportStatus == 'DIPROSES') {
+    final bool isMyReport = item.reporterName == 'Saya';
+    if (isMyReport) {
+      if (item.reportStatus == 'DIPROSES') {
+        return 'Sudah\nDitemukan';
+      }
+      if (item.reportStatus == 'DALAM KLAIM') {
+        return 'Lanjut\nChat';
+      }
       return 'Sudah\nDitemukan';
+    } else {
+      if (item.reportStatus == 'DALAM KLAIM') {
+        return 'Lanjut\nChat';
+      }
+      return item.isLostReport ? 'Hubungi\nPemilik' : 'Hubungi\nPenemu';
     }
-    if (item.reportStatus == 'DALAM KLAIM') {
-      return 'Lanjut\nChat';
-    }
-    return item.isLostReport ? 'Sudah\nDitemukan' : 'Hubungi\nPenemu';
   }
 
   void _showConfirmDialog(
