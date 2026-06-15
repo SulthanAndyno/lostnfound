@@ -5,14 +5,25 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/lost_and_found_bottom_bar.dart';
 
 class CreateReportScreen extends StatefulWidget {
-  const CreateReportScreen({Key? key}) : super(key: key);
+  final bool initialIsLostReport;
+
+  const CreateReportScreen({
+    Key? key,
+    this.initialIsLostReport = true,
+  }) : super(key: key);
 
   @override
   State<CreateReportScreen> createState() => _CreateReportScreenState();
 }
 
 class _CreateReportScreenState extends State<CreateReportScreen> {
-  bool isLaporKehilangan = true;
+  late bool isLaporKehilangan;
+
+  @override
+  void initState() {
+    super.initState();
+    isLaporKehilangan = widget.initialIsLostReport;
+  }
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
