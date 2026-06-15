@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import 'create_report_screen.dart';
 import 'my_reports_screen.dart';
+import 'chat_history_screen.dart';
 import '../models/lost_and_found_item.dart';
 import '../widgets/lost_and_found_item_card.dart';
 import '../services/lost_and_found_service.dart';
@@ -99,15 +100,15 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Tombol Laporan Saya
+          // Tombol Riwayat Chat
           IconButton(
-            icon: const Icon(Icons.assignment_outlined, color: Colors.white),
-            tooltip: 'Laporan Saya',
+            icon: const Icon(Icons.chat_outlined, color: Colors.white),
+            tooltip: 'Riwayat Chat',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const MyReportsScreen(),
+                  builder: (context) => const ChatHistoryScreen(),
                 ),
               );
             },
@@ -178,6 +179,7 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+
                                 // Badge Laporan Saya
                                 GestureDetector(
                                   onTap: () {
@@ -191,31 +193,27 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                                      horizontal: 10,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryRed.withOpacity(
-                                        0.1,
-                                      ),
+                                      color: AppColors.primaryRed.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: AppColors.primaryRed.withOpacity(
-                                          0.3,
-                                        ),
+                                        color: AppColors.primaryRed.withValues(alpha: 0.3),
                                       ),
                                     ),
-                                    child: Row(
+                                    child: const Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
+                                      children: [
                                         Icon(
                                           Icons.history,
                                           color: AppColors.primaryRed,
-                                          size: 14,
+                                          size: 13,
                                         ),
                                         SizedBox(width: 4),
                                         Text(
-                                          'Laporan Saya',
+                                          'Laporan',
                                           style: TextStyle(
                                             color: AppColors.primaryRed,
                                             fontSize: 10,
@@ -471,7 +469,9 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      const CreateReportScreen(),
+                                      CreateReportScreen(
+                                        initialIsLostReport: isBarangHilang,
+                                      ),
                                 ),
                               );
                           if (newReportMap != null) {
