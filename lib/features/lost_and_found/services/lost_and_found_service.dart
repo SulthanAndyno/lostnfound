@@ -146,6 +146,44 @@ class LostAndFoundService extends ChangeNotifier {
         'imageUrl': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
       },
     ];
+
+    // Additional mock chat for itemId = '1'
+    _chatMessages['1'] = [
+      {
+        'isMe': true,
+        'message': 'Permisi, saya kehilangan dompet hitam di perpustakaan. Apakah Anda menemukannya?',
+        'time': '10:15 AM',
+        'hasImage': false,
+      },
+      {
+        'isMe': false,
+        'message': 'Halo, saya rasa saya pernah lihat dompet hitam di meja baca lantai 2. Coba cek ke satpam ya.',
+        'time': '10:20 AM',
+        'hasImage': false,
+      },
+    ];
+
+    // Mock chat for itemId = '4'
+    _chatMessages['4'] = [
+      {
+        'isMe': false,
+        'message': 'Halo, ini dompet saya! Saya sangat lega Anda menemukannya.',
+        'time': '11:00 AM',
+        'hasImage': false,
+      },
+      {
+        'isMe': true,
+        'message': 'Alhamdulillah, bisa kita bertemu di lobby gedung A?',
+        'time': '11:05 AM',
+        'hasImage': false,
+      },
+      {
+        'isMe': false,
+        'message': 'Baik, saya akan ke sana jam 2 siang ya.',
+        'time': '11:08 AM',
+        'hasImage': false,
+      },
+    ];
   }
 
   // Getters
@@ -230,4 +268,37 @@ class LostAndFoundService extends ChangeNotifier {
     });
     notifyListeners();
   }
+
+  /// Returns all item IDs that have chat conversations
+  List<String> getChatItemIds() {
+    return _chatMessages.keys.where((id) => _chatMessages[id]!.isNotEmpty).toList();
+  }
+
+  /// Returns chat conversations paired with their item data for the history screen
+  List<Map<String, dynamic>> getChatConversations() {
+    final conversations = <Map<String, dynamic>>[];
+    for (final itemId in _chatMessages.keys) {
+      final messages = _chatMessages[itemId];
+      if (messages == null || messages.isEmpty) continue;
+
+      final item = getItemById(itemId);
+      if (item == null) continue;
+
+      final lastMessage = messages.last;
+      conversations.add({
+        'itemId': itemId,
+        'item': item,
+        'lastMessage': lastMessage['message'] as String,
+        'lastTime': lastMessage['time'] as String,
+        'isLastMe': lastMessage['isMe'] as bool,
+        'messageCount': messages.length,
+        'hasUnread': !(lastMessage['isMe'] as bool),
+      });
+    }
+    return conversations;
+  }
+
+  /// Check if any chat history exists
+  bool get hasChatHistory => _chatMessages.values.any((msgs) => msgs.isNotEmpty);
 }
+
