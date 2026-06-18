@@ -124,66 +124,6 @@ class LostAndFoundService extends ChangeNotifier {
       ),
     ]);
 
-    // Populate initial chat messages for itemId = '2'
-    _chatMessages['2'] = [
-      {
-        'isMe': false,
-        'message': 'Halo, saya rasa saya menemukan headphone Anda di perpustakaan Kampus B tadi.',
-        'time': '09:42 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': true,
-        'message': 'Wah serius? Terima kasih banyak! Apakah kondisinya masih baik?',
-        'time': '09:45 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': false,
-        'message': 'Iya, kondisinya aman. Ini fotonya untuk memastikan.',
-        'time': '09:48 AM',
-        'hasImage': true,
-        'imageUrl': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
-      },
-    ];
-
-    // Additional mock chat for itemId = '1'
-    _chatMessages['1'] = [
-      {
-        'isMe': true,
-        'message': 'Permisi, saya kehilangan dompet hitam di perpustakaan. Apakah Anda menemukannya?',
-        'time': '10:15 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': false,
-        'message': 'Halo, saya rasa saya pernah lihat dompet hitam di meja baca lantai 2. Coba cek ke satpam ya.',
-        'time': '10:20 AM',
-        'hasImage': false,
-      },
-    ];
-
-    // Mock chat for itemId = '4'
-    _chatMessages['4'] = [
-      {
-        'isMe': false,
-        'message': 'Halo, ini dompet saya! Saya sangat lega Anda menemukannya.',
-        'time': '11:00 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': true,
-        'message': 'Alhamdulillah, bisa kita bertemu di lobby gedung A?',
-        'time': '11:05 AM',
-        'hasImage': false,
-      },
-      {
-        'isMe': false,
-        'message': 'Baik, saya akan ke sana jam 2 siang ya.',
-        'time': '11:08 AM',
-        'hasImage': false,
-      },
-    ];
   }
 
   // Getters
@@ -241,14 +181,7 @@ class LostAndFoundService extends ChangeNotifier {
   // Chat Messages
   List<Map<String, dynamic>> getChatMessages(String itemId) {
     if (!_chatMessages.containsKey(itemId)) {
-      _chatMessages[itemId] = [
-        {
-          'isMe': false,
-          'message': 'Halo, apakah barang ini masih tersedia atau sudah ada yang mengklaim?',
-          'time': '09:40 AM',
-          'hasImage': false,
-        }
-      ];
+      _chatMessages[itemId] = [];
     }
     return _chatMessages[itemId]!;
   }
