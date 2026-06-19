@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../models/lost_and_found_item.dart';
 import '../screens/lost_and_found_detail_screen.dart';
 import '../screens/lost_and_found_chat_screen.dart';
+import '../services/lost_and_found_service.dart';
 
 class LostAndFoundItemCard extends StatelessWidget {
   final LostAndFoundItem item;
@@ -202,7 +203,7 @@ class LostAndFoundItemCard extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      final bool isMyReport = item.reporterName == 'Saya';
+                      final bool isMyReport = item.reporterName == LostAndFoundService().activeUserName;
                       if (item.reportStatus == 'DIPROSES' && !isMyReport) {
                         onStatusUpdated?.call('DALAM KLAIM');
                       }

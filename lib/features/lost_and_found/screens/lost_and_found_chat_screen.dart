@@ -40,7 +40,7 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
     final bool isMyReport = widget.reporterName == 'Pihak Lain';
     LostAndFoundService().connectChat(
       itemId,
-      senderName: isMyReport ? 'Saya' : 'Pihak Lain',
+      senderName: LostAndFoundService().activeUserName,
     );
   }
 

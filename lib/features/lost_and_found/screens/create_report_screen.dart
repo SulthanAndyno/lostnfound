@@ -207,7 +207,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                       Navigator.pop(dialogContext); // Tutup dialog
                       
                       // Buat objek data laporan baru
-                      final newReport = {
+                      final Map<String, dynamic> newReport = {
                         'status': isLaporKehilangan ? 'LOST REPORT' : 'FOUND REPORT',
                         'itemName': _nameController.text.trim().toUpperCase(),
                         'location': _locationController.text.trim(),

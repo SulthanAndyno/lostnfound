@@ -476,20 +476,17 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
                           size: 28,
                         ),
                         onPressed: () async {
-                          final newReportMap =
-                              await Navigator.push<Map<String, dynamic>>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      CreateReportScreen(
-                                        initialIsLostReport: isBarangHilang,
-                                      ),
-                                ),
-                              );
-                          if (newReportMap != null) {
-                            final map = Map<String, dynamic>.from(newReportMap);
-                            map['id'] = DateTime.now().millisecondsSinceEpoch
-                                .toString();
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CreateReportScreen(
+                                initialIsLostReport: isBarangHilang,
+                              ),
+                            ),
+                          );
+                          if (result != null && result is Map) {
+                            final map = Map<String, dynamic>.from(result);
+                            map['id'] = DateTime.now().millisecondsSinceEpoch.toString();
                             map['campusName'] = widget.campusName;
                             final newItem = LostAndFoundItem.fromMap(map);
                             LostAndFoundService().createReport(newItem);

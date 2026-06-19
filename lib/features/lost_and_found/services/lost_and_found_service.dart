@@ -12,8 +12,8 @@ class LostAndFoundService extends ChangeNotifier {
   // Ganti host ini dengan alamat ngrok atau IP laptop kamu untuk testing real device ya beb!
   static String serverHost = 'murkiness-utensil-fondly.ngrok-free.dev';
   
-  static String get apiBaseUrl => 'http://$serverHost';
-  static String get wsBaseUrl => 'ws://$serverHost';
+  static String get apiBaseUrl => 'https://$serverHost';
+  static String get wsBaseUrl => 'wss://$serverHost';
 
   // Menyimpan nama user aktif untuk simulasi chat 2 HP (SSO test)
   String activeUserName = 'Budi';

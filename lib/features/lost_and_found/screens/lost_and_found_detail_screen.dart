@@ -302,7 +302,7 @@ class LostAndFoundDetailScreen extends StatelessWidget {
 
                             // Status-aware Action Buttons
                             if (item.isActive) ...[
-                              if (item.reporterName == 'Saya') ...[
+                              if (item.reporterName == LostAndFoundService().activeUserName) ...[
                                 // Jika laporan milik SAYA
                                 if (item.reportStatus == 'DIPROSES') ...[
                                   // Primary: Tandai Selesai
