@@ -34,10 +34,21 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
   void initState() {
     super.initState();
     LostAndFoundService().addListener(_onServiceChanged);
+    
+    // Hubungkan WebSocket real-time chat
+    final String itemId = widget.itemId ?? 'default';
+    final bool isMyReport = widget.reporterName == 'Pihak Lain';
+    LostAndFoundService().connectChat(
+      itemId,
+      senderName: isMyReport ? 'Saya' : 'Pihak Lain',
+    );
   }
 
   @override
   void dispose() {
+    final String itemId = widget.itemId ?? 'default';
+    LostAndFoundService().disconnectChat(itemId);
+    
     LostAndFoundService().removeListener(_onServiceChanged);
     _messageController.dispose();
     _scrollController.dispose();

@@ -25,6 +25,7 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
   void initState() {
     super.initState();
     LostAndFoundService().addListener(_onServiceChanged);
+    LostAndFoundService().fetchItems();
   }
 
   @override

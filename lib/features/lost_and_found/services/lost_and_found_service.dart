@@ -1,129 +1,47 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/lost_and_found_item.dart';
-import '../../../core/theme/app_colors.dart';
 
 class LostAndFoundService extends ChangeNotifier {
   // Singleton pattern
   static final LostAndFoundService _instance = LostAndFoundService._internal();
   factory LostAndFoundService() => _instance;
   
+  // Ganti host ini dengan alamat ngrok atau IP laptop kamu untuk testing real device ya beb!
+  static String serverHost = 'localhost:8080';
+  
+  static String get apiBaseUrl => 'http://$serverHost';
+  static String get wsBaseUrl => 'ws://$serverHost';
+
   LostAndFoundService._internal() {
-    _initializeMockData();
+    _initializeData();
   }
 
   final List<LostAndFoundItem> _items = [];
   final Map<String, List<Map<String, dynamic>>> _chatMessages = {};
+  final Map<String, WebSocketChannel> _activeChannels = {};
 
-  void _initializeMockData() {
-    _items.addAll([
-      LostAndFoundItem(
-        id: '1',
-        status: 'LOST REPORT',
-        itemName: 'DOMPET KULIT HITAM',
-        location: 'Gedung Perpustakaan Pusat, Lt. 2.',
-        imageUrl: 'https://images.unsplash.com/photo-1627124118123-2854b3dbc19a?q=80&w=300',
-        category: 'Aksesoris & Personal',
-        date: '12 Okt 2023',
-        description: 'Dompet kulit berwarna hitam merek \'Fossil\'. Berisi kartu identitas (KTM), beberapa kartu ATM, dan uang tunai. Terakhir terlihat di meja area pelajar lantai 2 Perpustakaan Pusat.',
-        reporterName: 'Budi',
-        reporterAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150',
-        reporterRating: 4.9,
-        isLostReport: true,
-        statusColor: AppColors.primaryRed,
-        reportStatus: 'DIPROSES',
-        campusName: 'Bandung',
-      ),
-      LostAndFoundItem(
-        id: '2',
-        status: 'LOST REPORT',
-        itemName: 'HEADPHONE SONY',
-        location: 'Perpustakaan Kampus B',
-        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
-        category: 'Elektronik',
-        date: '15 Okt 2023',
-        description: 'Headphone Sony WH-1000XM4 warna hitam. Terakhir diletakkan di meja perpustakaan Kampus B.',
-        reporterName: 'Siti',
-        reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
-        reporterRating: 4.8,
-        isLostReport: true,
-        statusColor: AppColors.primaryRed,
-        reportStatus: 'DALAM KLAIM',
-        campusName: 'Bandung',
-      ),
-      LostAndFoundItem(
-        id: '3',
-        status: 'LOST REPORT',
-        itemName: 'KUNCI KAMAR KOS',
-        location: 'Area Parkiran Kampus A',
-        imageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=300',
-        category: 'Lain-lain',
-        date: '16 Okt 2023',
-        description: 'Gantungan kunci kamar kos dengan mainan boneka beruang warna coklat.',
-        reporterName: 'Rian',
-        reporterAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150',
-        reporterRating: 4.7,
-        isLostReport: true,
-        isCancelled: true,
-        backgroundColor: const Color(0xFFEBE3E1),
-        statusColor: AppColors.primaryRed,
-        reportStatus: 'BATAL',
-        campusName: 'Bandung',
-      ),
-      LostAndFoundItem(
-        id: '4',
-        status: 'FOUND REPORT',
-        itemName: 'DOMPET KULIT HITAM',
-        location: 'Gedung Perpustakaan Pusat, Lt. 2.',
-        imageUrl: 'https://images.unsplash.com/photo-1627124118123-2854b3dbc19a?q=80&w=300',
-        category: 'Aksesoris & Personal',
-        date: '12 Okt 2023',
-        description: 'Dompet kulit berwarna hitam merek \'Fossil\'. Ditemukan di meja area pelajar lantai 2 Perpustakaan Pusat.',
-        reporterName: 'Budi',
-        reporterAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150',
-        reporterRating: 4.9,
-        isLostReport: false,
-        statusColor: const Color(0xFF00897B),
-        reportStatus: 'DIPROSES',
-        campusName: 'Bandung',
-      ),
-      LostAndFoundItem(
-        id: '5',
-        status: 'FOUND REPORT',
-        itemName: 'HEADPHONE SONY',
-        location: 'Telah diserahkan kepada pemilik\n12 September 2025.',
-        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300',
-        category: 'Elektronik',
-        date: '15 Okt 2023',
-        description: 'Headphone Sony WH-1000XM4 warna hitam. Telah diserahkan kepada pemilik pada 12 September 2025.',
-        reporterName: 'Siti',
-        reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
-        reporterRating: 4.8,
-        isLostReport: false,
-        isFoundCompleted: true,
-        statusColor: const Color(0xFF00897B),
-        reportStatus: 'SELESAI',
-        campusName: 'Bandung',
-      ),
-      LostAndFoundItem(
-        id: '6',
-        status: 'FOUND REPORT',
-        itemName: 'KUNCI KAMAR KOS',
-        location: 'Telah diserahkan kepada pemilik\n12 September 2025.',
-        imageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=300',
-        category: 'Lain-lain',
-        date: '16 Okt 2023',
-        description: 'Kunci kamar kos dengan gantungan besi. Telah diserahkan kepada pemilik pada 12 September 2025.',
-        reporterName: 'Rian',
-        reporterAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150',
-        reporterRating: 4.7,
-        isLostReport: false,
-        isFoundCompleted: true,
-        statusColor: const Color(0xFF00897B),
-        reportStatus: 'SELESAI',
-        campusName: 'Bandung',
-      ),
-    ]);
+  void _initializeData() {
+    fetchItems();
+  }
 
+  // Fetch all items from Go backend
+  Future<void> fetchItems() async {
+    try {
+      final response = await http.get(Uri.parse('$apiBaseUrl/api/items'));
+      if (response.statusCode == 200) {
+        final List decoded = jsonDecode(response.body);
+        _items.clear();
+        for (var map in decoded) {
+          _items.add(LostAndFoundItem.fromMap(map));
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching items: $e');
+    }
   }
 
   // Getters
@@ -145,12 +63,27 @@ class LostAndFoundService extends ChangeNotifier {
   }
 
   // Actions
-  void createReport(LostAndFoundItem newItem) {
+  Future<void> createReport(LostAndFoundItem newItem) async {
+    // Add locally first for instant UI response
     _items.insert(0, newItem);
     notifyListeners();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBaseUrl/api/items'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(newItem.toMap()),
+      );
+      if (response.statusCode != 201) {
+        debugPrint('Failed to save item on server: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error creating report: $e');
+    }
   }
 
-  void updateItemStatus(String itemId, String newStatus) {
+  Future<void> updateItemStatus(String itemId, String newStatus) async {
+    // Update locally first for instant UI response
     final index = _items.indexWhere((item) => item.id == itemId);
     if (index != -1) {
       final oldItem = _items[index];
@@ -176,38 +109,138 @@ class LostAndFoundService extends ChangeNotifier {
       );
       notifyListeners();
     }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBaseUrl/api/items/$itemId/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': newStatus}),
+      );
+      if (response.statusCode != 200) {
+        debugPrint('Failed to update status on server: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error updating status: $e');
+    }
   }
 
-  // Chat Messages
+  // Get chat messages (if list is empty, fetches from backend)
   List<Map<String, dynamic>> getChatMessages(String itemId) {
     if (!_chatMessages.containsKey(itemId)) {
       _chatMessages[itemId] = [];
+      fetchChatHistory(itemId);
     }
     return _chatMessages[itemId]!;
   }
 
-  void sendChatMessage(String itemId, {required String message, required bool isMe, String? imageUrl}) {
-    if (!_chatMessages.containsKey(itemId)) {
-      _chatMessages[itemId] = [];
+  // Fetch chat history from Go backend
+  Future<void> fetchChatHistory(String itemId) async {
+    try {
+      final response = await http.get(Uri.parse('$apiBaseUrl/api/chats/$itemId?activeUser=Saya'));
+      if (response.statusCode == 200) {
+        final List decoded = jsonDecode(response.body);
+        _chatMessages[itemId] = decoded.map((msg) {
+          return {
+            'isMe': msg['isMe'] ?? (msg['senderName'] == 'Saya'),
+            'message': msg['message'] ?? '',
+            'time': msg['time'] ?? '',
+            'hasImage': msg['hasImage'] ?? false,
+            'imageUrl': msg['imageUrl'],
+          };
+        }).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching chat history: $e');
     }
-    final now = TimeOfDay.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    _chatMessages[itemId]!.add({
-      'isMe': isMe,
-      'message': message,
-      'time': timeStr,
-      'hasImage': imageUrl != null,
-      'imageUrl': imageUrl,
-    });
-    notifyListeners();
   }
 
-  /// Returns all item IDs that have chat conversations
+  // Connect to WebSocket for real-time updates
+  void connectChat(String itemId, {String senderName = 'Saya'}) {
+    if (_activeChannels.containsKey(itemId)) return;
+
+    try {
+      final wsUri = Uri.parse('$wsBaseUrl/ws/chat?itemId=$itemId&senderName=$senderName');
+      final channel = WebSocketChannel.connect(wsUri);
+      _activeChannels[itemId] = channel;
+
+      channel.stream.listen((message) {
+        try {
+          final Map<String, dynamic> msg = jsonDecode(message);
+          if (!_chatMessages.containsKey(itemId)) {
+            _chatMessages[itemId] = [];
+          }
+          
+          // Check if message already exists locally (to avoid double display if sending)
+          final bool messageExists = _chatMessages[itemId]!.any((m) =>
+              m['message'] == msg['message'] &&
+              m['time'] == msg['time'] &&
+              m['isMe'] == (msg['senderName'] == senderName));
+              
+          if (!messageExists) {
+            _chatMessages[itemId]!.add({
+              'isMe': msg['senderName'] == senderName,
+              'message': msg['message'] ?? '',
+              'time': msg['time'] ?? '',
+              'hasImage': msg['hasImage'] ?? false,
+              'imageUrl': msg['imageUrl'],
+            });
+            notifyListeners();
+          }
+        } catch (e) {
+          debugPrint('Error parsing WebSocket message: $e');
+        }
+      }, onError: (err) {
+        debugPrint('WebSocket error: $err');
+        _activeChannels.remove(itemId);
+      }, onDone: () {
+        debugPrint('WebSocket closed for item: $itemId');
+        _activeChannels.remove(itemId);
+      });
+    } catch (e) {
+      debugPrint('Error connecting WebSocket: $e');
+    }
+  }
+
+  // Disconnect WebSocket
+  void disconnectChat(String itemId) {
+    if (_activeChannels.containsKey(itemId)) {
+      _activeChannels[itemId]?.sink.close();
+      _activeChannels.remove(itemId);
+    }
+  }
+
+  // Send message via WebSocket
+  void sendChatMessage(String itemId, {required String message, required bool isMe, String? imageUrl}) {
+    final channel = _activeChannels[itemId];
+    if (channel != null) {
+      channel.sink.add(jsonEncode({
+        'message': message,
+        'hasImage': imageUrl != null,
+        'imageUrl': imageUrl ?? '',
+      }));
+    } else {
+      // Fallback in case WS is not connected
+      if (!_chatMessages.containsKey(itemId)) {
+        _chatMessages[itemId] = [];
+      }
+      final now = TimeOfDay.now();
+      final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+      _chatMessages[itemId]!.add({
+        'isMe': isMe,
+        'message': message,
+        'time': timeStr,
+        'hasImage': imageUrl != null,
+        'imageUrl': imageUrl,
+      });
+      notifyListeners();
+    }
+  }
+
   List<String> getChatItemIds() {
     return _chatMessages.keys.where((id) => _chatMessages[id]!.isNotEmpty).toList();
   }
 
-  /// Returns chat conversations paired with their item data for the history screen
   List<Map<String, dynamic>> getChatConversations() {
     final conversations = <Map<String, dynamic>>[];
     for (final itemId in _chatMessages.keys) {
@@ -231,7 +264,5 @@ class LostAndFoundService extends ChangeNotifier {
     return conversations;
   }
 
-  /// Check if any chat history exists
   bool get hasChatHistory => _chatMessages.values.any((msgs) => msgs.isNotEmpty);
 }
-
