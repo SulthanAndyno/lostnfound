@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/lost_and_found_bottom_bar.dart';
+import '../services/lost_and_found_service.dart';
 
 class CreateReportScreen extends StatefulWidget {
   final bool initialIsLostReport;
@@ -218,7 +219,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         'category': _selectedCategory,
                         'date': _dateController.text.trim(),
                         'description': _descriptionController.text.trim(),
-                        'reporterName': 'Saya',
+                        'reporterName': LostAndFoundService().activeUserName,
                         'reporterAvatar': 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150',
                         'reporterRating': 5.0,
                         'isLostReport': isLaporKehilangan,

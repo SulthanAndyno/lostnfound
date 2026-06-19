@@ -77,6 +77,14 @@ func main() {
 	http.HandleFunc("/api/items/", corsMiddleware(handleItemDetailsOrStatus))
 	http.HandleFunc("/api/chats/", corsMiddleware(handleChatHistory))
 	http.HandleFunc("/ws/chat", handleWebSocket)
+	http.HandleFunc("/", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintln(w, "Backend Lost & Found berjalan lancar, beb! 🚀")
+	}))
 
 	// Start server on port 8080 (binds to 0.0.0.0 so external devices can access)
 	port := "8080"

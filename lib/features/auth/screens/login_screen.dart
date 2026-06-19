@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../lost_and_found/services/lost_and_found_service.dart';
 import '../../home/screens/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,10 +14,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-
-  // Akun Demo
-  final String _demoUsername = "demo";
-  final String _demoPassword = "password123";
 
   void _handleLogin() {
     final username = _usernameController.text.trim();
@@ -32,15 +29,33 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (username == _demoUsername && password == _demoPassword) {
+    bool loginSuccess = false;
+    String matchedName = 'Budi';
+
+    if (password == 'password123') {
+      if (username == 'user1') {
+        loginSuccess = true;
+        matchedName = 'Budi'; // User HP A
+      } else if (username == 'user2') {
+        loginSuccess = true;
+        matchedName = 'Siti'; // User HP B
+      } else if (username == 'demo') {
+        loginSuccess = true;
+        matchedName = 'Budi';
+      }
+    }
+
+    if (loginSuccess) {
+      // Set active user di service
+      LostAndFoundService().setActiveUser(matchedName);
+
       // Login Berhasil
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login Berhasil! Selamat Datang.'),
+        SnackBar(
+          content: Text('Login Berhasil! Selamat Datang, $matchedName.'),
           backgroundColor: Colors.green,
         ),
       );
-      // TODO: Navigasi ke halaman beranda versi login
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -50,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Login Gagal
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Username atau Password salah! (Coba: demo / password123)'),
+          content: Text('Username atau Password salah!\nCoba: user1 atau user2 (Password: password123)'),
           backgroundColor: Colors.red,
         ),
       );

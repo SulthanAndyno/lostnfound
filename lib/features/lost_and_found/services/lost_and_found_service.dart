@@ -10,10 +10,13 @@ class LostAndFoundService extends ChangeNotifier {
   factory LostAndFoundService() => _instance;
   
   // Ganti host ini dengan alamat ngrok atau IP laptop kamu untuk testing real device ya beb!
-  static String serverHost = 'localhost:8080';
+  static String serverHost = 'murkiness-utensil-fondly.ngrok-free.dev';
   
   static String get apiBaseUrl => 'http://$serverHost';
   static String get wsBaseUrl => 'ws://$serverHost';
+
+  // Menyimpan nama user aktif untuk simulasi chat 2 HP (SSO test)
+  String activeUserName = 'Budi';
 
   LostAndFoundService._internal() {
     _initializeData();
@@ -25,6 +28,12 @@ class LostAndFoundService extends ChangeNotifier {
 
   void _initializeData() {
     fetchItems();
+  }
+
+  void setActiveUser(String name) {
+    activeUserName = name;
+    debugPrint('User aktif diubah menjadi: $activeUserName');
+    notifyListeners();
   }
 
   // Fetch all items from Go backend
@@ -51,7 +60,7 @@ class LostAndFoundService extends ChangeNotifier {
   }
 
   List<LostAndFoundItem> getMyReports() {
-    return List.from(_items.where((item) => item.reporterName == 'Saya'));
+    return List.from(_items.where((item) => item.reporterName == activeUserName));
   }
 
   LostAndFoundItem? getItemById(String id) {
@@ -136,12 +145,12 @@ class LostAndFoundService extends ChangeNotifier {
   // Fetch chat history from Go backend
   Future<void> fetchChatHistory(String itemId) async {
     try {
-      final response = await http.get(Uri.parse('$apiBaseUrl/api/chats/$itemId?activeUser=Saya'));
+      final response = await http.get(Uri.parse('$apiBaseUrl/api/chats/$itemId?activeUser=$activeUserName'));
       if (response.statusCode == 200) {
         final List decoded = jsonDecode(response.body);
         _chatMessages[itemId] = decoded.map((msg) {
           return {
-            'isMe': msg['isMe'] ?? (msg['senderName'] == 'Saya'),
+            'isMe': msg['isMe'] ?? (msg['senderName'] == activeUserName),
             'message': msg['message'] ?? '',
             'time': msg['time'] ?? '',
             'hasImage': msg['hasImage'] ?? false,
@@ -156,11 +165,13 @@ class LostAndFoundService extends ChangeNotifier {
   }
 
   // Connect to WebSocket for real-time updates
-  void connectChat(String itemId, {String senderName = 'Saya'}) {
+  void connectChat(String itemId, {String? senderName}) {
     if (_activeChannels.containsKey(itemId)) return;
 
+    final name = senderName ?? activeUserName;
+
     try {
-      final wsUri = Uri.parse('$wsBaseUrl/ws/chat?itemId=$itemId&senderName=$senderName');
+      final wsUri = Uri.parse('$wsBaseUrl/ws/chat?itemId=$itemId&senderName=$name');
       final channel = WebSocketChannel.connect(wsUri);
       _activeChannels[itemId] = channel;
 
@@ -175,11 +186,11 @@ class LostAndFoundService extends ChangeNotifier {
           final bool messageExists = _chatMessages[itemId]!.any((m) =>
               m['message'] == msg['message'] &&
               m['time'] == msg['time'] &&
-              m['isMe'] == (msg['senderName'] == senderName));
+              m['isMe'] == (msg['senderName'] == name));
               
           if (!messageExists) {
             _chatMessages[itemId]!.add({
-              'isMe': msg['senderName'] == senderName,
+              'isMe': msg['senderName'] == name,
               'message': msg['message'] ?? '',
               'time': msg['time'] ?? '',
               'hasImage': msg['hasImage'] ?? false,

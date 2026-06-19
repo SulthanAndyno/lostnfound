@@ -387,54 +387,65 @@ class _LostAndFoundMainScreenState extends State<LostAndFoundMainScreen> {
 
                         // List of Items
                         Expanded(
-                          child: filteredItems.isEmpty
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.search_off,
-                                        size: 60,
-                                        color: Colors.grey[400],
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await LostAndFoundService().fetchItems();
+                            },
+                            child: filteredItems.isEmpty
+                                ? SingleChildScrollView(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    child: Container(
+                                      height: MediaQuery.of(context).size.height * 0.4,
+                                      alignment: Alignment.center,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.search_off,
+                                            size: 60,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'Tidak ada data barang.',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Coba ubah filter atau buat laporan baru.',
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        'Tidak ada data barang.',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.only(bottom: 80),
+                                    itemCount: filteredItems.length,
+                                    itemBuilder: (context, index) {
+                                      final item = filteredItems[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12.0,
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Coba ubah filter atau buat laporan baru.',
-                                        style: TextStyle(
-                                          color: Colors.grey[400],
-                                          fontSize: 12,
+                                        child: LostAndFoundItemCard(
+                                          item: item,
+                                          onStatusUpdated: (newStatus) {
+                                            _updateItemStatus(item.id, newStatus);
+                                          },
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                )
-                              : ListView.builder(
-                                  padding: const EdgeInsets.only(bottom: 80),
-                                  itemCount: filteredItems.length,
-                                  itemBuilder: (context, index) {
-                                    final item = filteredItems[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 12.0,
-                                      ),
-                                      child: LostAndFoundItemCard(
-                                        item: item,
-                                        onStatusUpdated: (newStatus) {
-                                          _updateItemStatus(item.id, newStatus);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                          ),
                         ),
                       ],
                     ),

@@ -89,13 +89,14 @@ class LostAndFoundItem {
       'reportStatus': reportStatus,
       'isCancelled': isCancelled,
       'isFoundCompleted': isFoundCompleted,
-      'backgroundColor': backgroundColor,
-      'statusColor': statusColor,
       'campusName': campusName,
     };
   }
 
   factory LostAndFoundItem.fromMap(Map<String, dynamic> map) {
+    final bool isLost = map['isLostReport'] ?? true;
+    final String repStatus = map['reportStatus'] ?? 'DIPROSES';
+    
     return LostAndFoundItem(
       id: map['id'],
       status: map['status'] ?? '',
@@ -108,12 +109,12 @@ class LostAndFoundItem {
       reporterName: map['reporterName'] ?? 'Anonim',
       reporterAvatar: map['reporterAvatar'] ?? '',
       reporterRating: (map['reporterRating'] as num?)?.toDouble() ?? 0.0,
-      isLostReport: map['isLostReport'] ?? true,
-      reportStatus: map['reportStatus'] ?? 'DIPROSES',
+      isLostReport: isLost,
+      reportStatus: repStatus,
       isCancelled: map['isCancelled'] ?? false,
       isFoundCompleted: map['isFoundCompleted'] ?? false,
-      backgroundColor: map['backgroundColor'] ?? Colors.white,
-      statusColor: map['statusColor'] ?? Colors.red,
+      backgroundColor: repStatus == 'BATAL' ? const Color(0xFFEBE3E1) : Colors.white,
+      statusColor: isLost ? const Color(0xFFEF4444) : const Color(0xFF00897B),
       campusName: map['campusName'] ?? 'Bandung',
     );
   }
