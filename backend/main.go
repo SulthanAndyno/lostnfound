@@ -77,6 +77,7 @@ func main() {
 	http.HandleFunc("/api/items/", corsMiddleware(handleItemDetailsOrStatus))
 	http.HandleFunc("/api/chats/", corsMiddleware(handleChatHistory))
 	http.HandleFunc("/ws/chat", handleWebSocket)
+	http.HandleFunc("/ws/items", handleItemsWebSocket)
 	http.HandleFunc("/", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -370,6 +371,8 @@ func handleItems(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		broadcastItemUpdate()
+
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(item)
 		return
@@ -421,6 +424,8 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		broadcastItemUpdate()
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success": true, "status": "%s"}`, payload.Status)
@@ -610,5 +615,55 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		clientsMu.Unlock()
+	}
+}
+
+// Items feed WebSockets for instant synchronization
+var (
+	itemClients   = make(map[*websocket.Conn]bool)
+	itemClientsMu sync.Mutex
+)
+
+func handleItemsWebSocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("Items WebSocket Upgrade error: %v", err)
+		return
+	}
+	defer conn.Close()
+
+	itemClientsMu.Lock()
+	itemClients[conn] = true
+	itemClientsMu.Unlock()
+
+	log.Println("Device terhubung ke WebSocket feed barang")
+
+	defer func() {
+		itemClientsMu.Lock()
+		delete(itemClients, conn)
+		itemClientsMu.Unlock()
+		log.Println("Device terputus dari WebSocket feed barang")
+	}()
+
+	// Read loop to keep connection open and detect disconnects
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+	}
+}
+
+func broadcastItemUpdate() {
+	itemClientsMu.Lock()
+	defer itemClientsMu.Unlock()
+	log.Printf("Broadcasting item update signal to %d clients", len(itemClients))
+	for conn := range itemClients {
+		err := conn.WriteMessage(websocket.TextMessage, []byte("update"))
+		if err != nil {
+			log.Printf("Error broadcasting item update: %v", err)
+			conn.Close()
+			delete(itemClients, conn)
+		}
 	}
 }

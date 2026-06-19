@@ -26,8 +26,39 @@ class LostAndFoundService extends ChangeNotifier {
   final Map<String, List<Map<String, dynamic>>> _chatMessages = {};
   final Map<String, WebSocketChannel> _activeChannels = {};
 
+  WebSocketChannel? _itemsChannel;
+
   void _initializeData() {
     fetchItems();
+    connectItemsSync();
+  }
+
+  void connectItemsSync() {
+    if (_itemsChannel != null) return;
+    try {
+      final wsUri = Uri.parse('$wsBaseUrl/ws/items');
+      final channel = WebSocketChannel.connect(wsUri);
+      _itemsChannel = channel;
+
+      channel.stream.listen((message) {
+        if (message == 'update') {
+          debugPrint('WebSocket: Menerima sinyal update barang dari server');
+          fetchItems();
+        }
+      }, onError: (err) {
+        debugPrint('Items WebSocket error: $err');
+        _itemsChannel = null;
+        // Reconnect after 3 seconds
+        Future.delayed(const Duration(seconds: 3), connectItemsSync);
+      }, onDone: () {
+        debugPrint('Items WebSocket closed');
+        _itemsChannel = null;
+        // Reconnect after 3 seconds
+        Future.delayed(const Duration(seconds: 3), connectItemsSync);
+      });
+    } catch (e) {
+      debugPrint('Error connecting items sync WebSocket: $e');
+    }
   }
 
   void setActiveUser(String name) {
