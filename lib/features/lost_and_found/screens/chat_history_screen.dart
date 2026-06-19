@@ -220,8 +220,11 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
         final messageCount = conv['messageCount'] as int;
         final hasUnread = conv['hasUnread'] as bool;
 
+        final otherPartyName = conv['otherPartyName'] as String;
+
         return _buildChatTile(
           item: item,
+          otherPartyName: otherPartyName,
           lastMessage: lastMessage,
           lastTime: lastTime,
           isLastMe: isLastMe,
@@ -234,6 +237,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
 
   Widget _buildChatTile({
     required LostAndFoundItem item,
+    required String otherPartyName,
     required String lastMessage,
     required String lastTime,
     required bool isLastMe,
@@ -265,7 +269,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
                 builder: (context) => LostAndFoundChatScreen(
                   itemName: item.itemName,
                   imageUrl: item.imageUrl,
-                  reporterName: item.reporterName,
+                  reporterName: otherPartyName,
                   reporterAvatar: item.reporterAvatar,
                   itemId: item.id,
                   onStatusChanged: (newStatus) {
@@ -331,7 +335,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
                         children: [
                           Expanded(
                             child: Text(
-                              item.reporterName,
+                              otherPartyName,
                               style: TextStyle(
                                 fontWeight: hasUnread
                                     ? FontWeight.w800

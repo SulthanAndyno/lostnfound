@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -75,9 +78,11 @@ func main() {
 	// Setup API Endpoints
 	http.HandleFunc("/api/items", corsMiddleware(handleItems))
 	http.HandleFunc("/api/items/", corsMiddleware(handleItemDetailsOrStatus))
+	http.HandleFunc("/api/upload", corsMiddleware(handleUpload))
 	http.HandleFunc("/api/chats/", corsMiddleware(handleChatHistory))
 	http.HandleFunc("/ws/chat", handleWebSocket)
 	http.HandleFunc("/ws/items", handleItemsWebSocket)
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.HandleFunc("/", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -305,6 +310,48 @@ func i2b(i int) bool {
 }
 
 // Handlers
+func handleUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		http.Error(w, "File too large", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err := r.FormFile("image")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	os.MkdirAll("uploads", os.ModePerm)
+	safeFilename := filepath.Base(handler.Filename)
+	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), safeFilename)
+	dst, err := os.Create(filepath.Join("uploads", filename))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Host can be derived from the request if behind ngrok, but for simplicity returning relative path
+	// The flutter app can prepend the ngrok URL
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"url": "/uploads/" + filename,
+	})
+}
+
 func handleItems(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		campus := r.URL.Query().Get("campus")

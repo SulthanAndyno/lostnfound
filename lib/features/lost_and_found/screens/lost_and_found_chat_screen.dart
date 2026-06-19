@@ -37,7 +37,8 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
     
     // Hubungkan WebSocket real-time chat
     final String itemId = widget.itemId ?? 'default';
-    final bool isMyReport = widget.reporterName == 'Pihak Lain';
+    final item = LostAndFoundService().getItemById(itemId);
+    final bool isMyReport = item?.reporterName == LostAndFoundService().activeUserName;
     LostAndFoundService().connectChat(
       itemId,
       senderName: LostAndFoundService().activeUserName,

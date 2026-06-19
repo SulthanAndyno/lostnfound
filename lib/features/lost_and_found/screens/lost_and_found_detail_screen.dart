@@ -363,13 +363,20 @@ class LostAndFoundDetailScreen extends StatelessWidget {
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
                                       onPressed: () {
+                                        final conversations = LostAndFoundService().getChatConversations();
+                                        String otherPartyName = 'Pihak Lain';
+                                        try {
+                                          final conv = conversations.firstWhere((c) => c['itemId'] == item.id);
+                                          otherPartyName = conv['otherPartyName'] as String;
+                                        } catch (_) {}
+
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => LostAndFoundChatScreen(
                                               itemName: item.itemName,
                                               imageUrl: item.imageUrl,
-                                              reporterName: 'Pihak Lain',
+                                              reporterName: otherPartyName,
                                               reporterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
                                               itemId: item.id,
                                               onStatusChanged: onStatusChanged,
@@ -429,24 +436,75 @@ class LostAndFoundDetailScreen extends StatelessWidget {
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      if (item.reportStatus == 'DIPROSES') {
-                                        LostAndFoundService().updateItemStatus(item.id, 'DALAM KLAIM');
-                                        onStatusChanged?.call('DALAM KLAIM');
-                                      }
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => LostAndFoundChatScreen(
-                                            itemName: item.itemName,
-                                            imageUrl: item.imageUrl,
-                                            reporterName: item.reporterName,
-                                            reporterAvatar: item.reporterAvatar,
-                                            itemId: item.id,
-                                            onStatusChanged: onStatusChanged,
+                                      onPressed: () {
+                                        final bool isParticipant = LostAndFoundService()
+                                            .getChatConversations()
+                                            .any((conv) => conv['itemId'] == item.id);
+
+                                        if (item.reportStatus == 'DALAM KLAIM' && !isParticipant) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: const Text('Barang ini sedang dalam proses klaim oleh pengguna lain.'),
+                                              behavior: SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              backgroundColor: Colors.orange,
+                                            ),
+                                          );
+                                          return;
+                                        }
+
+                                        void navigateToChat() {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => LostAndFoundChatScreen(
+                                                itemName: item.itemName,
+                                                imageUrl: item.imageUrl,
+                                                reporterName: item.reporterName,
+                                                reporterAvatar: item.reporterAvatar,
+                                                itemId: item.id,
+                                                onStatusChanged: onStatusChanged,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        if (item.reportStatus == 'DIPROSES') {
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              title: const Text('Hubungi Pelapor', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                              content: const Text('Apakah kamu ingin mengajukan klaim/pengembalian atas barang ini, atau hanya ingin bertanya?', style: TextStyle(fontSize: 13)),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(ctx);
+                                                    navigateToChat();
+                                                  },
+                                                  child: const Text('Hanya Bertanya'),
+                                                ),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryRed, foregroundColor: Colors.white),
+                                                  onPressed: () {
+                                                    Navigator.pop(ctx);
+                                                    LostAndFoundService().updateItemStatus(item.id, 'DALAM KLAIM');
+                                                    onStatusChanged?.call('DALAM KLAIM');
+                                                    LostAndFoundService().sendChatMessage(
+                                                      item.id,
+                                                      message: 'Halo, saya ingin mengajukan klaim atas barang ini.',
+                                                      isMe: true,
+                                                    );
+                                                    navigateToChat();
+                                                  },
+                                                  child: const Text('Ajukan Klaim'),
+                                                ),
+                                              ],
                                           ),
-                                        ),
-                                      );
+                                        );
+                                      } else {
+                                        navigateToChat();
+                                      }
                                     },
                                     icon: Icon(
                                       item.reportStatus == 'DALAM KLAIM'

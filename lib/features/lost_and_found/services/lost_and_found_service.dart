@@ -104,15 +104,34 @@ class LostAndFoundService extends ChangeNotifier {
 
   // Actions
   Future<void> createReport(LostAndFoundItem newItem) async {
-    // Add locally first for instant UI response
+    // Add locally first for instant UI response (optimistic UI)
     _items.insert(0, newItem);
     notifyListeners();
 
     try {
+      String finalImageUrl = newItem.imageUrl;
+
+      // Upload image if it's a local file
+      if (!finalImageUrl.startsWith('http')) {
+        var request = http.MultipartRequest('POST', Uri.parse('$apiBaseUrl/api/upload'));
+        request.files.add(await http.MultipartFile.fromPath('image', finalImageUrl));
+        var res = await request.send();
+        if (res.statusCode == 200) {
+          final resData = await res.stream.bytesToString();
+          final decoded = jsonDecode(resData);
+          finalImageUrl = apiBaseUrl + decoded['url'];
+        } else {
+          debugPrint('Failed to upload image: ${res.statusCode}');
+        }
+      }
+
+      final Map<String, dynamic> bodyPayload = newItem.toMap();
+      bodyPayload['imageUrl'] = finalImageUrl;
+
       final response = await http.post(
         Uri.parse('$apiBaseUrl/api/items'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(newItem.toMap()),
+        body: jsonEncode(bodyPayload),
       );
       if (response.statusCode != 201) {
         debugPrint('Failed to save item on server: ${response.statusCode}');
@@ -182,6 +201,7 @@ class LostAndFoundService extends ChangeNotifier {
         _chatMessages[itemId] = decoded.map((msg) {
           return {
             'isMe': msg['isMe'] ?? (msg['senderName'] == activeUserName),
+            'senderName': msg['senderName'] ?? '',
             'message': msg['message'] ?? '',
             'time': msg['time'] ?? '',
             'hasImage': msg['hasImage'] ?? false,
@@ -222,6 +242,7 @@ class LostAndFoundService extends ChangeNotifier {
           if (!messageExists) {
             _chatMessages[itemId]!.add({
               'isMe': msg['senderName'] == name,
+              'senderName': msg['senderName'] ?? '',
               'message': msg['message'] ?? '',
               'time': msg['time'] ?? '',
               'hasImage': msg['hasImage'] ?? false,
@@ -254,6 +275,10 @@ class LostAndFoundService extends ChangeNotifier {
 
   // Send message via WebSocket
   void sendChatMessage(String itemId, {required String message, required bool isMe, String? imageUrl}) {
+    if (!_activeChannels.containsKey(itemId)) {
+      connectChat(itemId);
+    }
+
     final channel = _activeChannels[itemId];
     if (channel != null) {
       channel.sink.add(jsonEncode({
@@ -261,15 +286,23 @@ class LostAndFoundService extends ChangeNotifier {
         'hasImage': imageUrl != null,
         'imageUrl': imageUrl ?? '',
       }));
-    } else {
-      // Fallback in case WS is not connected
-      if (!_chatMessages.containsKey(itemId)) {
-        _chatMessages[itemId] = [];
-      }
-      final now = TimeOfDay.now();
-      final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    }
+
+    // Selalu tambahkan ke lokal untuk instant UI feedback
+    if (!_chatMessages.containsKey(itemId)) {
+      _chatMessages[itemId] = [];
+    }
+    final now = TimeOfDay.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    
+    // Cek agar tidak duplikat dengan response dari WebSocket
+    final bool existsLocally = _chatMessages[itemId]!.any((m) => 
+        m['message'] == message && m['time'] == timeStr && m['isMe'] == isMe);
+        
+    if (!existsLocally) {
       _chatMessages[itemId]!.add({
         'isMe': isMe,
+        'senderName': activeUserName,
         'message': message,
         'time': timeStr,
         'hasImage': imageUrl != null,
@@ -293,9 +326,23 @@ class LostAndFoundService extends ChangeNotifier {
       if (item == null) continue;
 
       final lastMessage = messages.last;
+      
+      // Temukan nama lawan bicara dari pesan yang bukan milik kita
+      // Jika tidak ada, gunakan default 'Pihak Lain'
+      final otherUserMessage = messages.reversed.firstWhere(
+        (m) => m['isMe'] == false, 
+        orElse: () => <String, dynamic>{},
+      );
+      final String otherPartyName = otherUserMessage.containsKey('senderName') 
+          ? (otherUserMessage['senderName'] as String).isNotEmpty 
+              ? otherUserMessage['senderName'] 
+              : 'Pihak Lain'
+          : 'Pihak Lain';
+
       conversations.add({
         'itemId': itemId,
         'item': item,
+        'otherPartyName': otherPartyName,
         'lastMessage': lastMessage['message'] as String,
         'lastTime': lastMessage['time'] as String,
         'isLastMe': lastMessage['isMe'] as bool,
