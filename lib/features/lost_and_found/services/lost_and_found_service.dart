@@ -161,7 +161,10 @@ class LostAndFoundService extends ChangeNotifier {
       final response = await http.post(
         Uri.parse('$apiBaseUrl/api/items/$itemId/status'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'status': newStatus}),
+        body: jsonEncode({
+          'status': newStatus,
+          'claimerName': activeUserName, // Always send current user as claimer
+        }),
       );
       if (response.statusCode != 200) {
         debugPrint('Failed to update status on server: ${response.statusCode}');
@@ -283,12 +286,15 @@ class LostAndFoundService extends ChangeNotifier {
       }, onError: (err) {
         debugPrint('WebSocket error: $err');
         _activeChannels.remove(itemId);
+        Future.delayed(const Duration(seconds: 3), () => connectChat(itemId, senderName: name));
       }, onDone: () {
         debugPrint('WebSocket closed for item: $itemId');
         _activeChannels.remove(itemId);
+        Future.delayed(const Duration(seconds: 3), () => connectChat(itemId, senderName: name));
       });
     } catch (e) {
       debugPrint('Error connecting WebSocket: $e');
+      Future.delayed(const Duration(seconds: 3), () => connectChat(itemId, senderName: name));
     }
   }
 
@@ -361,15 +367,9 @@ class LostAndFoundService extends ChangeNotifier {
         // Jika saya bukan pelapor (saya pengklaim), lawan bicara SELALU pelapor
         otherPartyName = item.reporterName;
       } else {
-        // Jika saya pelapor, lawan bicara adalah orang yang nge-chat saya
-        final otherUserMessage = messages.reversed.firstWhere(
-          (m) => m['isMe'] == false, 
-          orElse: () => <String, dynamic>{},
-        );
-        otherPartyName = otherUserMessage.containsKey('senderName') 
-            ? (otherUserMessage['senderName'] as String).isNotEmpty 
-                ? otherUserMessage['senderName'] 
-                : 'Pihak Lain'
+        // Jika saya pelapor, lawan bicara SELALU pengklaim (dari database)
+        otherPartyName = (item.claimerName != null && item.claimerName!.isNotEmpty) 
+            ? item.claimerName! 
             : 'Pihak Lain';
       }
 

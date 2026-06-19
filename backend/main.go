@@ -34,6 +34,7 @@ type Item struct {
 	IsCancelled      bool    `json:"isCancelled"`
 	IsFoundCompleted bool    `json:"isFoundCompleted"`
 	CampusName       string  `json:"campusName"`
+	ClaimerName      string  `json:"claimerName"`
 }
 
 type ChatMessage struct {
@@ -130,7 +131,8 @@ func createTables() {
 		report_status TEXT,
 		is_cancelled INTEGER,
 		is_found_completed INTEGER,
-		campus_name TEXT
+		campus_name TEXT,
+		claimer_name TEXT
 	);`
 
 	chatTable := `
@@ -359,10 +361,12 @@ func handleItems(w http.ResponseWriter, r *http.Request) {
 		var rows *sql.Rows
 		var err error
 
+		query := "SELECT id, status, item_name, location, image_url, category, date, description, reporter_name, reporter_avatar, reporter_rating, is_lost_report, report_status, is_cancelled, is_found_completed, campus_name, COALESCE(claimer_name, '') FROM items"
+		
 		if campus != "" {
-			rows, err = db.Query("SELECT * FROM items WHERE LOWER(campus_name) = LOWER(?) ORDER BY id DESC", campus)
+			rows, err = db.Query(query + " WHERE LOWER(campus_name) = LOWER(?) ORDER BY id DESC LIMIT 100", campus)
 		} else {
-			rows, err = db.Query("SELECT * FROM items ORDER BY id DESC")
+			rows, err = db.Query(query + " ORDER BY id DESC LIMIT 100")
 		}
 
 		if err != nil {
@@ -375,10 +379,11 @@ func handleItems(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var item Item
 			var isLostReport, isCancelled, isFoundCompleted int
+			var claimerName string
 			err := rows.Scan(
 				&item.ID, &item.Status, &item.ItemName, &item.Location, &item.ImageURL, &item.Category,
 				&item.Date, &item.Description, &item.ReporterName, &item.ReporterAvatar, &item.ReporterRating,
-				&isLostReport, &item.ReportStatus, &isCancelled, &isFoundCompleted, &item.CampusName,
+				&isLostReport, &item.ReportStatus, &isCancelled, &isFoundCompleted, &item.CampusName, &claimerName,
 			)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -387,6 +392,7 @@ func handleItems(w http.ResponseWriter, r *http.Request) {
 			item.IsLostReport = i2b(isLostReport)
 			item.IsCancelled = i2b(isCancelled)
 			item.IsFoundCompleted = i2b(isFoundCompleted)
+			// item.ClaimerName = claimerName // not added to struct yet
 			items = append(items, item)
 		}
 
@@ -455,7 +461,8 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 	if isStatusUpdate && r.Method == "POST" {
 		// Update status
 		type StatusPayload struct {
-			Status string `json:"status"`
+			Status      string `json:"status"`
+			ClaimerName string `json:"claimerName"`
 		}
 		var payload StatusPayload
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -468,8 +475,9 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 
 		if payload.Status == "DALAM KLAIM" {
 			// Cegah race condition: hanya boleh diklaim jika statusnya masih DIPROSES
-			res, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ? AND report_status = 'DIPROSES'",
-				payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
+			// Set claimer_name agar identitas pengklaim terikat ke barang
+			res, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ?, claimer_name = ? WHERE id = ? AND report_status = 'DIPROSES'",
+				payload.Status, b2i(isCancelled), b2i(isFoundCompleted), payload.ClaimerName, id)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -480,8 +488,14 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		} else {
-			_, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ?",
-				payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
+			var query string
+			if payload.Status == "DIPROSES" {
+				query = "UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ?, claimer_name = '' WHERE id = ?"
+			} else {
+				query = "UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ?"
+			}
+			
+			_, err := db.Exec(query, payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -499,10 +513,12 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 		// Get single item
 		var item Item
 		var isLostReport, isCancelled, isFoundCompleted int
-		err := db.QueryRow("SELECT * FROM items WHERE id = ?", id).Scan(
+		var claimerName string
+		query := "SELECT id, status, item_name, location, image_url, category, date, description, reporter_name, reporter_avatar, reporter_rating, is_lost_report, report_status, is_cancelled, is_found_completed, campus_name, COALESCE(claimer_name, '') FROM items WHERE id = ?"
+		err := db.QueryRow(query, id).Scan(
 			&item.ID, &item.Status, &item.ItemName, &item.Location, &item.ImageURL, &item.Category,
 			&item.Date, &item.Description, &item.ReporterName, &item.ReporterAvatar, &item.ReporterRating,
-			&isLostReport, &item.ReportStatus, &isCancelled, &isFoundCompleted, &item.CampusName,
+			&isLostReport, &item.ReportStatus, &isCancelled, &isFoundCompleted, &item.CampusName, &claimerName,
 		)
 		if err == sql.ErrNoRows {
 			http.Error(w, "Item not found", http.StatusNotFound)

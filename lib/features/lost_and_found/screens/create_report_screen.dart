@@ -74,7 +74,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   Navigator.pop(context);
                   final XFile? pickedFile = await _picker.pickImage(
                     source: ImageSource.camera,
-                    imageQuality: 80,
+                    imageQuality: 70,
+                    maxWidth: 800,
+                    maxHeight: 800,
                   );
                   if (pickedFile != null) {
                     setState(() {
@@ -90,7 +92,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   Navigator.pop(context);
                   final XFile? pickedFile = await _picker.pickImage(
                     source: ImageSource.gallery,
-                    imageQuality: 80,
+                    imageQuality: 70,
+                    maxWidth: 800,
+                    maxHeight: 800,
                   );
                   if (pickedFile != null) {
                     setState(() {

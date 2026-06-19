@@ -42,6 +42,7 @@ class LostAndFoundItem {
   final Color backgroundColor;
   final Color statusColor;
   final String campusName;
+  String? claimerName;
 
   LostAndFoundItem({
     String? id,
@@ -62,6 +63,7 @@ class LostAndFoundItem {
     this.backgroundColor = Colors.white,
     required this.statusColor,
     this.campusName = 'Bandung',
+    this.claimerName,
   }) : id = id ?? UniqueKey().toString();
 
   /// Warna dari reportStatus
@@ -116,6 +118,7 @@ class LostAndFoundItem {
       backgroundColor: repStatus == 'BATAL' ? const Color(0xFFEBE3E1) : Colors.white,
       statusColor: isLost ? const Color(0xFFEF4444) : const Color(0xFF00897B),
       campusName: map['campusName'] ?? 'Bandung',
+      claimerName: map['claimerName'],
     );
   }
 }
