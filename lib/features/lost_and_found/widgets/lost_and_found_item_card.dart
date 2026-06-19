@@ -308,14 +308,18 @@ class LostAndFoundItemCard extends StatelessWidget {
                             size: 14,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            item.reportStatus == 'DALAM KLAIM'
-                                ? 'Lanjut Chat'
-                                : (item.isLostReport ? 'Hubungi Pemilik' : 'Hubungi Penemu'),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Text(
+                              item.reportStatus == 'DALAM KLAIM'
+                                  ? 'Lanjut Chat'
+                                  : (item.isLostReport ? 'Hubungi Pemilik' : 'Hubungi Penemu'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
@@ -349,12 +353,16 @@ class LostAndFoundItemCard extends StatelessWidget {
                         children: [
                           Icon(Icons.info_outline, color: Colors.black87, size: 14),
                           SizedBox(width: 6),
-                          Text(
-                            'Detail',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Text(
+                              'Detail',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
