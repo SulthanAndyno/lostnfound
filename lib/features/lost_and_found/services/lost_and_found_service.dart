@@ -31,6 +31,7 @@ class LostAndFoundService extends ChangeNotifier {
   void _initializeData() {
     fetchItems();
     connectItemsSync();
+    fetchAllUserChats();
   }
 
   void connectItemsSync() {
@@ -212,6 +213,32 @@ class LostAndFoundService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error fetching chat history: $e');
+    }
+  }
+
+  // Fetch ALL chat conversations for active user
+  Future<void> fetchAllUserChats() async {
+    try {
+      final response = await http.get(Uri.parse('$apiBaseUrl/api/user-chats/$activeUserName'));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> decoded = jsonDecode(response.body);
+        decoded.forEach((itemId, messagesList) {
+          final List msgs = messagesList as List;
+          _chatMessages[itemId] = msgs.map((msg) {
+            return {
+              'isMe': msg['isMe'] ?? (msg['senderName'] == activeUserName),
+              'senderName': msg['senderName'] ?? '',
+              'message': msg['message'] ?? '',
+              'time': msg['time'] ?? '',
+              'hasImage': msg['hasImage'] ?? false,
+              'imageUrl': msg['imageUrl'],
+            };
+          }).toList();
+        });
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching all user chats: $e');
     }
   }
 

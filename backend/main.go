@@ -80,6 +80,7 @@ func main() {
 	http.HandleFunc("/api/items/", corsMiddleware(handleItemDetailsOrStatus))
 	http.HandleFunc("/api/upload", corsMiddleware(handleUpload))
 	http.HandleFunc("/api/chats/", corsMiddleware(handleChatHistory))
+	http.HandleFunc("/api/user-chats/", corsMiddleware(handleUserChatHistory))
 	http.HandleFunc("/ws/chat", handleWebSocket)
 	http.HandleFunc("/ws/items", handleItemsWebSocket)
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
@@ -547,6 +548,54 @@ func handleChatHistory(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(messages)
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func handleUserChatHistory(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Path[len("/api/user-chats/"):]
+	if username == "" {
+		http.Error(w, "Username is required", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == "GET" {
+		query := `
+			SELECT c.id, c.item_id, c.sender_name, c.message, c.time, c.has_image, c.image_url 
+			FROM chat_messages c
+			LEFT JOIN items i ON c.item_id = i.id
+			WHERE c.sender_name = ? OR i.reporter_name = ?
+			ORDER BY c.id ASC
+		`
+		rows, err := db.Query(query, username, username)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		history := make(map[string][]ChatMessage)
+		for rows.Next() {
+			var msg ChatMessage
+			var hasImage int
+			var imgURL sql.NullString
+			err := rows.Scan(&msg.ID, &msg.ItemID, &msg.SenderName, &msg.Message, &msg.Time, &hasImage, &imgURL)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			msg.HasImage = i2b(hasImage)
+			if imgURL.Valid {
+				msg.ImageURL = imgURL.String
+			}
+			msg.IsMe = msg.SenderName == username
+			history[msg.ItemID] = append(history[msg.ItemID], msg)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(history)
 		return
 	}
 
