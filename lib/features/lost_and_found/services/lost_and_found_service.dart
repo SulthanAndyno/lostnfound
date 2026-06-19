@@ -142,33 +142,20 @@ class LostAndFoundService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateItemStatus(String itemId, String newStatus) async {
-    // Update locally first for instant UI response
-    final index = _items.indexWhere((item) => item.id == itemId);
-    if (index != -1) {
-      final oldItem = _items[index];
-      _items[index] = LostAndFoundItem(
-        id: oldItem.id,
-        status: oldItem.status,
-        itemName: oldItem.itemName,
-        location: oldItem.location,
-        imageUrl: oldItem.imageUrl,
-        category: oldItem.category,
-        date: oldItem.date,
-        description: oldItem.description,
-        reporterName: oldItem.reporterName,
-        reporterAvatar: oldItem.reporterAvatar,
-        reporterRating: oldItem.reporterRating,
-        isLostReport: oldItem.isLostReport,
-        statusColor: oldItem.statusColor,
-        reportStatus: newStatus,
-        campusName: oldItem.campusName,
-        isFoundCompleted: newStatus == 'SELESAI',
-        isCancelled: newStatus == 'BATAL',
-        backgroundColor: newStatus == 'BATAL' ? const Color(0xFFEBE3E1) : Colors.white,
-      );
-      notifyListeners();
-    }
+
+  Future<bool> updateItemStatus(String itemId, String newStatus) async {
+    final index = _items.indexWhere((i) => i.id == itemId);
+    if (index == -1) return false;
+
+    final oldStatus = _items[index].reportStatus;
+    final oldCancelled = _items[index].isCancelled;
+    final oldCompleted = _items[index].isFoundCompleted;
+
+    // Optimistic update
+    _items[index].reportStatus = newStatus;
+    if (newStatus == 'BATAL') _items[index].isCancelled = true;
+    if (newStatus == 'SELESAI') _items[index].isFoundCompleted = true;
+    notifyListeners();
 
     try {
       final response = await http.post(
@@ -178,9 +165,22 @@ class LostAndFoundService extends ChangeNotifier {
       );
       if (response.statusCode != 200) {
         debugPrint('Failed to update status on server: ${response.statusCode}');
+        // Revert
+        _items[index].reportStatus = oldStatus;
+        _items[index].isCancelled = oldCancelled;
+        _items[index].isFoundCompleted = oldCompleted;
+        notifyListeners();
+        return false;
       }
+      return true;
     } catch (e) {
       debugPrint('Error updating status: $e');
+      // Revert
+      _items[index].reportStatus = oldStatus;
+      _items[index].isCancelled = oldCancelled;
+      _items[index].isFoundCompleted = oldCompleted;
+      notifyListeners();
+      return false;
     }
   }
 
@@ -354,17 +354,24 @@ class LostAndFoundService extends ChangeNotifier {
 
       final lastMessage = messages.last;
       
-      // Temukan nama lawan bicara dari pesan yang bukan milik kita
-      // Jika tidak ada, gunakan default 'Pihak Lain'
-      final otherUserMessage = messages.reversed.firstWhere(
-        (m) => m['isMe'] == false, 
-        orElse: () => <String, dynamic>{},
-      );
-      final String otherPartyName = otherUserMessage.containsKey('senderName') 
-          ? (otherUserMessage['senderName'] as String).isNotEmpty 
-              ? otherUserMessage['senderName'] 
-              : 'Pihak Lain'
-          : 'Pihak Lain';
+      final bool isMyReport = item.reporterName == activeUserName;
+      String otherPartyName;
+      
+      if (!isMyReport) {
+        // Jika saya bukan pelapor (saya pengklaim), lawan bicara SELALU pelapor
+        otherPartyName = item.reporterName;
+      } else {
+        // Jika saya pelapor, lawan bicara adalah orang yang nge-chat saya
+        final otherUserMessage = messages.reversed.firstWhere(
+          (m) => m['isMe'] == false, 
+          orElse: () => <String, dynamic>{},
+        );
+        otherPartyName = otherUserMessage.containsKey('senderName') 
+            ? (otherUserMessage['senderName'] as String).isNotEmpty 
+                ? otherUserMessage['senderName'] 
+                : 'Pihak Lain'
+            : 'Pihak Lain';
+      }
 
       conversations.add({
         'itemId': itemId,

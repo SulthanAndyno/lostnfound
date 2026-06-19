@@ -256,9 +256,23 @@ class LostAndFoundItemCard extends StatelessWidget {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryRed, foregroundColor: Colors.white),
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(ctx);
-                                  onStatusUpdated?.call('DALAM KLAIM');
+                                  final success = await LostAndFoundService().updateItemStatus(item.id, 'DALAM KLAIM');
+                                  if (!success) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Gagal: Barang ini baru saja diklaim oleh pengguna lain.'),
+                                          backgroundColor: Colors.red,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
                                   LostAndFoundService().sendChatMessage(
                                     item.id,
                                     message: 'Halo, saya ingin mengajukan klaim atas barang ini.',

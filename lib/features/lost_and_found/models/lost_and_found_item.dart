@@ -37,8 +37,8 @@ class LostAndFoundItem {
   final double reporterRating;
   final bool isLostReport;
   String reportStatus; // DIPROSES, DALAM KLAIM, SELESAI, BATAL
-  final bool isCancelled;
-  final bool isFoundCompleted;
+  bool isCancelled;
+  bool isFoundCompleted;
   final Color backgroundColor;
   final Color statusColor;
   final String campusName;

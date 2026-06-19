@@ -466,11 +466,26 @@ func handleItemDetailsOrStatus(w http.ResponseWriter, r *http.Request) {
 		isCancelled := payload.Status == "BATAL"
 		isFoundCompleted := payload.Status == "SELESAI"
 
-		_, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ?",
-			payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if payload.Status == "DALAM KLAIM" {
+			// Cegah race condition: hanya boleh diklaim jika statusnya masih DIPROSES
+			res, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ? AND report_status = 'DIPROSES'",
+				payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			rowsAffected, _ := res.RowsAffected()
+			if rowsAffected == 0 {
+				http.Error(w, "Barang sudah diklaim oleh pengguna lain", http.StatusConflict)
+				return
+			}
+		} else {
+			_, err := db.Exec("UPDATE items SET report_status = ?, is_cancelled = ?, is_found_completed = ? WHERE id = ?",
+				payload.Status, b2i(isCancelled), b2i(isFoundCompleted), id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		broadcastItemUpdate()
