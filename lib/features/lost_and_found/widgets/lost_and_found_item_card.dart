@@ -171,7 +171,7 @@ class LostAndFoundItemCard extends StatelessWidget {
                         ],
                       ),
 
-                    // Dalam Klaim info
+                    // Dalam Klaim  status info 
                     if (item.reportStatus == 'DALAM KLAIM')
                       Row(
                         children: [
