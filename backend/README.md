@@ -34,9 +34,9 @@ Kamu akan mendapatkan output link HTTPS, misalnya:
    static String serverHost = 'localhost:8080';
    ```
 3. Ganti nilainya dengan host ngrok yang kamu dapatkan (tanpa `http://` atau `https://` dan tanpa garis miring `/` di belakangnya).
-   *Contoh:*
+   *Contoh untuk punyamu:*
    ```dart
-   static String serverHost = 'a1b2-34-56.ngrok-free.app';
+   static String serverHost = 'murkiness-utensil-fondly.ngrok-free.dev';
    ```
 4. Save file-nya, lalu jalankan aplikasi Flutter kamu di kedua HP!
 
