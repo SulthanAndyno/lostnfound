@@ -73,6 +73,9 @@ func main() {
 	// Create tables
 	createTables()
 
+	// Alter table if exists to add claimer_name (ignores error if column already exists)
+	_, _ = db.Exec(`ALTER TABLE items ADD COLUMN claimer_name TEXT DEFAULT ''`)
+
 	// Seed initial data if database is empty
 	seedInitialData()
 
