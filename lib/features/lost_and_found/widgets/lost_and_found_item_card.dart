@@ -297,19 +297,20 @@ class LostAndFoundItemCard extends StatelessWidget {
                             : AppColors.primaryRed,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            item.reportStatus == 'DALAM KLAIM'
-                                ? Icons.chat
-                                : Icons.chat_bubble_outline,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              item.reportStatus == 'DALAM KLAIM'
+                                  ? Icons.chat
+                                  : Icons.chat_bubble_outline,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
                               item.reportStatus == 'DALAM KLAIM'
                                   ? 'Lanjut Chat'
                                   : (item.isLostReport ? 'Hubungi Pemilik' : 'Hubungi Penemu'),
@@ -318,11 +319,9 @@ class LostAndFoundItemCard extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -348,24 +347,23 @@ class LostAndFoundItemCard extends StatelessWidget {
                         color: AppColors.primaryRed.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.black87, size: 14),
-                          SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.info_outline, color: Colors.black87, size: 14),
+                            const SizedBox(width: 6),
+                            const Text(
                               'Detail',
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
