@@ -745,6 +745,9 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		clientsMu.Unlock()
+
+		// Send global update signal to refresh Chat History lists/badges on all devices
+		broadcastItemUpdate()
 	}
 }
 

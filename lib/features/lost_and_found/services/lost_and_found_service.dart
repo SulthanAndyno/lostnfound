@@ -43,8 +43,9 @@ class LostAndFoundService extends ChangeNotifier {
 
       channel.stream.listen((message) {
         if (message == 'update') {
-          debugPrint('WebSocket: Menerima sinyal update barang dari server');
+          debugPrint('WebSocket: Menerima sinyal update barang/chat dari server');
           fetchItems();
+          fetchAllUserChats();
         }
       }, onError: (err) {
         debugPrint('Items WebSocket error: $err');

@@ -12,20 +12,16 @@ class ChatHistoryScreen extends StatefulWidget {
   State<ChatHistoryScreen> createState() => _ChatHistoryScreenState();
 }
 
-class _ChatHistoryScreenState extends State<ChatHistoryScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     LostAndFoundService().addListener(_onServiceChanged);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     LostAndFoundService().removeListener(_onServiceChanged);
     super.dispose();
   }
@@ -41,13 +37,6 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
       .where((c) {
         final item = c['item'] as LostAndFoundItem;
         return item.isActive;
-      })
-      .toList();
-
-  List<Map<String, dynamic>> get _archivedConversations => _allConversations
-      .where((c) {
-        final item = c['item'] as LostAndFoundItem;
-        return !item.isActive;
       })
       .toList();
 
@@ -71,55 +60,10 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen>
           ),
         ),
         centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Container(
-            color: AppColors.primaryRed,
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.white,
-              indicatorWeight: 3,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white60,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.chat_bubble_outline, size: 16),
-                      const SizedBox(width: 6),
-                      Text('Aktif (${_activeConversations.length})'),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.archive_outlined, size: 16),
-                      const SizedBox(width: 6),
-                      Text('Arsip (${_archivedConversations.length})'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
-      body: _allConversations.isEmpty
+      body: _activeConversations.isEmpty
           ? _buildEmptyState()
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildConversationList(_activeConversations, isArchive: false),
-                _buildConversationList(_archivedConversations, isArchive: true),
-              ],
-            ),
+          : _buildConversationList(_activeConversations, isArchive: false),
     );
   }
 
