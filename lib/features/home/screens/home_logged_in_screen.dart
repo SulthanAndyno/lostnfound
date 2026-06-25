@@ -311,13 +311,18 @@ class HomeLoggedInScreen extends StatelessWidget {
           style: const TextStyle(color: Colors.grey, fontSize: 10),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textDark,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            softWrap: false,
           ),
         ),
       ],
