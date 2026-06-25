@@ -23,6 +23,8 @@ class LostAndFoundService extends ChangeNotifier {
   }
 
   final List<LostAndFoundItem> _items = [];
+  final Map<String, LostAndFoundItem> _itemsCache = {};
+  final Set<String> _pendingFetches = {};
   final Map<String, List<Map<String, dynamic>>> _chatMessages = {};
   final Map<String, WebSocketChannel> _activeChannels = {};
 
@@ -77,7 +79,9 @@ class LostAndFoundService extends ChangeNotifier {
         final List decoded = jsonDecode(response.body);
         _items.clear();
         for (var map in decoded) {
-          _items.add(LostAndFoundItem.fromMap(map));
+          final item = LostAndFoundItem.fromMap(map);
+          _items.add(item);
+          _itemsCache[item.id] = item;
         }
         notifyListeners();
       }
@@ -97,10 +101,37 @@ class LostAndFoundService extends ChangeNotifier {
   }
 
   LostAndFoundItem? getItemById(String id) {
+    // 1. Cek dari list _items utama
+    for (final item in _items) {
+      if (item.id == id) {
+        _itemsCache[id] = item;
+        return item;
+      }
+    }
+    // 2. Cek dari cache lokal
+    if (_itemsCache.containsKey(id)) {
+      return _itemsCache[id];
+    }
+    // 3. Jika tidak ada, fetch secara async dari server dan simpan di cache
+    _fetchAndCacheItem(id);
+    return null;
+  }
+
+  Future<void> _fetchAndCacheItem(String id) async {
+    if (_pendingFetches.contains(id)) return;
+    _pendingFetches.add(id);
     try {
-      return _items.firstWhere((item) => item.id == id);
-    } catch (_) {
-      return null;
+      final response = await http.get(Uri.parse('$apiBaseUrl/api/items/$id'));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> decoded = jsonDecode(response.body);
+        final item = LostAndFoundItem.fromMap(decoded);
+        _itemsCache[id] = item;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching single item details: $e');
+    } finally {
+      _pendingFetches.remove(id);
     }
   }
 
