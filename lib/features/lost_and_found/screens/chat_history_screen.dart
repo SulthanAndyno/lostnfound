@@ -33,20 +33,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
   List<Map<String, dynamic>> get _allConversations =>
       LostAndFoundService().getChatConversations();
 
-  List<Map<String, dynamic>> get _activeConversations => _allConversations
-      .where((c) {
-        final item = c['item'] as LostAndFoundItem;
-        final bool isClaimChat = c['isClaimChat'] as bool? ?? false;
-        
-        // Chat akan disembunyikan/dihapus HANYA JIKA:
-        // Laporan sudah Selesai/Batal DAN chat tersebut merupakan chat klaim.
-        // Jika itu hanya chat bertanya (bukan chat klaim), jangan disembunyikan.
-        if (!item.isActive && isClaimChat) {
-          return false;
-        }
-        return true;
-      })
-      .toList();
+  List<Map<String, dynamic>> get _activeConversations => _allConversations;
 
   @override
   Widget build(BuildContext context) {
