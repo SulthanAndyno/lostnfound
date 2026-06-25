@@ -32,10 +32,35 @@ class _LoginScreenState extends State<LoginScreen> {
     bool loginSuccess = false;
     String matchedName = 'Budi';
 
-    if (password == 'password123') {
+    final Map<String, String> allowedUsers = {
+      'user1': 'Budi',
+      'user2': 'Siti',
+      'user3': 'Rian',
+      'user4': 'Adi',
+      'user5': 'Eka',
+      'user6': 'Mega',
+    };
+
+    final lowerUsername = username.toLowerCase();
+    if (password == 'password123' && allowedUsers.containsKey(lowerUsername)) {
       loginSuccess = true;
-      // Gunakan username yang diinput sebagai nama user aktif (huruf pertama kapital)
-      matchedName = username[0].toUpperCase() + username.substring(1);
+      matchedName = allowedUsers[lowerUsername]!;
+    } else if (password != 'password123') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password salah! Coba gunakan: password123'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username tidak terdaftar! Coba: user1 sampai user6'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
     if (loginSuccess) {
