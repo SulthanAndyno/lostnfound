@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final Map<String, String> allowedUsers = {
       'sulthanandyno': 'Sulthan Andyno',
-      'farisrinovada': 'Faris Rinovada Naya',
+      'farizrinovada': 'Fariz Rinovada Naya',
       'zulfanaulia': 'Muhammad Zulfan Aulia',
       'rizqiraya': 'Rizqi Raya Rahmawan',
       'salsalian': 'Salsa Lian Nabila',
@@ -42,26 +42,28 @@ class _LoginScreenState extends State<LoginScreen> {
     };
 
     final lowerUsername = username.toLowerCase();
-    if (password == 'password123' && allowedUsers.containsKey(lowerUsername)) {
-      loginSuccess = true;
-      matchedName = allowedUsers[lowerUsername]!;
-    } else if (password != 'password123') {
+    if (!allowedUsers.containsKey(lowerUsername)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Password salah! Coba gunakan: password123'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username tidak terdaftar! Coba: user1 sampai user6'),
+          content: Text('Username salah!'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
+
+    if (password != 'password123') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password salah!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    matchedName = allowedUsers[lowerUsername]!;
+    loginSuccess = true;
 
     if (loginSuccess) {
       // Set active user di service
@@ -78,14 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
         (route) => false,
-      );
-    } else {
-      // Login Gagal
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username atau Password salah!\nCoba: user1 atau user2 (Password: password123)'),
-          backgroundColor: Colors.red,
-        ),
       );
     }
   }
