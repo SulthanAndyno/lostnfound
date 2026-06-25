@@ -61,7 +61,7 @@ class HomeLoggedInScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Visionaries',
+                              'SSO',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

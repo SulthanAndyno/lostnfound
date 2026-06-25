@@ -68,7 +68,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Visionaries',
+                        'SSO',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

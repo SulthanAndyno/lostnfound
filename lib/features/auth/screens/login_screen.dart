@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: 'Visionaries',
+                  hintText: 'SSO',
                   hintStyle: TextStyle(color: Colors.grey.shade400),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   enabledBorder: OutlineInputBorder(
