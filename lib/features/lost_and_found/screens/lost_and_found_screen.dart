@@ -144,31 +144,9 @@ class LostAndFoundScreen extends StatelessWidget {
                 topLeft: Radius.circular(24),
                 topRight: Radius.circular(24),
               ),
-              child: Image.network(
-                cityName == 'Bandung'
-                    ? 'https://images.unsplash.com/photo-1596436889106-be35e843f974?q=80&w=400'
-                    : cityName == 'Jakarta'
-                        ? 'https://images.unsplash.com/photo-1555899434-94d1368aa7af?q=80&w=400'
-                        : cityName == 'Purwokerto'
-                            ? 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=400'
-                            : 'https://images.unsplash.com/photo-1604999333679-b86d54738315?q=80&w=400',
+              child: Image.asset(
+                'assets/images/$cityName.png',
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: Colors.grey[200],
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                        strokeWidth: 2,
-                        color: AppColors.primaryRed,
-                      ),
-                    ),
-                  );
-                },
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.blue[100],
                   child: const Icon(
