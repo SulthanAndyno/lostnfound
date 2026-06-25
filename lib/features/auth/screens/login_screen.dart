@@ -33,16 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
     String matchedName = 'Budi';
 
     if (password == 'password123') {
-      if (username == 'user1') {
-        loginSuccess = true;
-        matchedName = 'Budi'; // User HP A
-      } else if (username == 'user2') {
-        loginSuccess = true;
-        matchedName = 'Siti'; // User HP B
-      } else if (username == 'demo') {
-        loginSuccess = true;
-        matchedName = 'Budi';
-      }
+      loginSuccess = true;
+      // Gunakan username yang diinput sebagai nama user aktif (huruf pertama kapital)
+      matchedName = username[0].toUpperCase() + username.substring(1);
     }
 
     if (loginSuccess) {
