@@ -173,7 +173,8 @@ class _LostAndFoundChatScreenState extends State<LostAndFoundChatScreen> {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundImage: NetworkImage(widget.reporterAvatar),
+              backgroundColor: Colors.grey[200],
+              child: Icon(Icons.person, size: 20, color: Colors.grey[600]),
             ),
             const SizedBox(width: 12),
             Expanded(
