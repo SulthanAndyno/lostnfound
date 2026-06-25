@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../lost_and_found/screens/lost_and_found_screen.dart';
+import '../../lost_and_found/services/lost_and_found_service.dart';
 
 class HomeLoggedInScreen extends StatelessWidget {
   const HomeLoggedInScreen({Key? key}) : super(key: key);
@@ -60,9 +61,9 @@ class HomeLoggedInScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'SSO',
-                              style: TextStyle(
+                            Text(
+                              LostAndFoundService().activeUserName,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
