@@ -247,7 +247,8 @@ class LostAndFoundDetailScreen extends StatelessWidget {
                                 children: [
                                   CircleAvatar(
                                     radius: 22,
-                                    backgroundImage: NetworkImage(item.reporterAvatar),
+                                    backgroundColor: Colors.grey[200],
+                                    child: Icon(Icons.person, size: 24, color: Colors.grey[600]),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
