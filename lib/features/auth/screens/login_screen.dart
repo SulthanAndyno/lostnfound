@@ -33,12 +33,12 @@ class _LoginScreenState extends State<LoginScreen> {
     String matchedName = 'Budi';
 
     final Map<String, String> allowedUsers = {
-      'user1': 'Budi',
-      'user2': 'Siti',
-      'user3': 'Rian',
-      'user4': 'Adi',
-      'user5': 'Eka',
-      'user6': 'Mega',
+      'sulthanandyno': 'Sulthan Andyno',
+      'farisrinovada': 'Faris Rinovada Naya',
+      'zulfanaulia': 'Muhammad Zulfan Aulia',
+      'rizqiraya': 'Rizqi Raya Rahmawan',
+      'salsalian': 'Salsa Lian Nabila',
+      'roroarya': 'Roro Arya Alma Fachira',
     };
 
     final lowerUsername = username.toLowerCase();
