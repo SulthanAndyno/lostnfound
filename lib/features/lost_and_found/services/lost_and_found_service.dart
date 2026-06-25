@@ -365,14 +365,26 @@ class LostAndFoundService extends ChangeNotifier {
       String otherPartyName;
       
       if (!isMyReport) {
-        // Jika saya bukan pelapor (saya pengklaim), lawan bicara SELALU pelapor
+        // Jika saya bukan pelapor (saya pengklaim/inquirer), lawan bicara SELALU pelapor
         otherPartyName = item.reporterName;
       } else {
-        // Jika saya pelapor, lawan bicara SELALU pengklaim (dari database)
-        otherPartyName = (item.claimerName != null && item.claimerName!.isNotEmpty) 
-            ? item.claimerName! 
-            : 'Pihak Lain';
+        // Cari nama pengirim lain dari riwayat pesan
+        final otherMsg = messages.firstWhere(
+          (m) => m['senderName'] != activeUserName,
+          orElse: () => <String, dynamic>{},
+        );
+        final String foundName = otherMsg['senderName'] as String? ?? '';
+        
+        otherPartyName = foundName.isNotEmpty
+            ? foundName
+            : ((item.claimerName != null && item.claimerName!.isNotEmpty)
+                ? item.claimerName!
+                : 'Pihak Lain');
       }
+
+      final bool isClaimChat = !isMyReport
+          ? (item.claimerName == activeUserName)
+          : (item.claimerName != null && item.claimerName!.isNotEmpty && item.claimerName == otherPartyName);
 
       conversations.add({
         'itemId': itemId,
@@ -383,6 +395,7 @@ class LostAndFoundService extends ChangeNotifier {
         'isLastMe': lastMessage['isMe'] as bool,
         'messageCount': messages.length,
         'hasUnread': !(lastMessage['isMe'] as bool),
+        'isClaimChat': isClaimChat,
       });
     }
     return conversations;
