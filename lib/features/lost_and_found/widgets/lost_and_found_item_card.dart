@@ -18,6 +18,7 @@ class LostAndFoundItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMyReport = item.reporterName == LostAndFoundService().activeUserName;
     return Container(
       decoration: BoxDecoration(
         color: item.backgroundColor,
@@ -203,10 +204,22 @@ class LostAndFoundItemCard extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      final bool isMyReport = item.reporterName == LostAndFoundService().activeUserName;
                       final bool isParticipant = LostAndFoundService()
                           .getChatConversations()
                           .any((conv) => conv['itemId'] == item.id);
+
+                      // Jika laporan milik sendiri dan belum ada klaim, tidak bisa chat sendiri
+                      if (isMyReport && item.reportStatus == 'DIPROSES') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Ini adalah laporan Anda sendiri. Menunggu klaim dari pengguna lain.'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            backgroundColor: Colors.blue,
+                          ),
+                        );
+                        return;
+                      }
 
                       // Blokir user lain yang mencoba masuk ke barang yang sedang diklaim orang lain
                       if (!isMyReport && item.reportStatus == 'DALAM KLAIM' && !isParticipant) {
@@ -292,9 +305,11 @@ class LostAndFoundItemCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: item.reportStatus == 'DALAM KLAIM'
-                            ? const Color(0xFF3B82F6)
-                            : AppColors.primaryRed,
+                        color: isMyReport && item.reportStatus == 'DIPROSES'
+                            ? Colors.grey.shade400
+                            : (item.reportStatus == 'DALAM KLAIM'
+                                ? const Color(0xFF3B82F6)
+                                : AppColors.primaryRed),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: FittedBox(
@@ -303,17 +318,21 @@ class LostAndFoundItemCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              item.reportStatus == 'DALAM KLAIM'
-                                  ? Icons.chat
-                                  : Icons.chat_bubble_outline,
+                              isMyReport && item.reportStatus == 'DIPROSES'
+                                  ? Icons.assignment_ind_outlined
+                                  : (item.reportStatus == 'DALAM KLAIM'
+                                      ? Icons.chat
+                                      : Icons.chat_bubble_outline),
                               color: Colors.white,
                               size: 14,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              item.reportStatus == 'DALAM KLAIM'
-                                  ? 'Lanjut Chat'
-                                  : (item.isLostReport ? 'Hubungi Pemilik' : 'Hubungi Penemu'),
+                              isMyReport && item.reportStatus == 'DIPROSES'
+                                  ? 'Laporan Saya'
+                                  : (item.reportStatus == 'DALAM KLAIM'
+                                      ? 'Lanjut Chat'
+                                      : (item.isLostReport ? 'Hubungi Pemilik' : 'Hubungi Penemu')),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
