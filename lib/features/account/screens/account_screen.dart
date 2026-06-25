@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../lost_and_found/services/lost_and_found_service.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -67,9 +68,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'SSO',
-                        style: TextStyle(
+                      Text(
+                        LostAndFoundService().activeUserName,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
