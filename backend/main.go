@@ -457,10 +457,14 @@ func handleUserChatHistory(w http.ResponseWriter, r *http.Request) {
 			SELECT c.id, c.item_id, c.sender_name, c.message, c.time, c.has_image, c.image_url 
 			FROM chat_messages c
 			LEFT JOIN items i ON c.item_id = i.id
-			WHERE c.sender_name = ? OR i.reporter_name = ?
+			WHERE c.item_id IN (
+				SELECT DISTINCT item_id 
+				FROM chat_messages 
+				WHERE sender_name = ?
+			) OR i.reporter_name = ? OR i.claimer_name = ?
 			ORDER BY c.id ASC
 		`
-		rows, err := db.Query(query, username, username)
+		rows, err := db.Query(query, username, username, username)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
